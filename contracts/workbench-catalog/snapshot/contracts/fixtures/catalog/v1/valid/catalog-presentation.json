@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "format": "apprecorder-catalog-presentation",
+  "rootPresentationId": "TARGET",
+  "items": [
+    {
+      "presentationId": "TARGET",
+      "order": 0,
+      "kind": "target",
+      "symbol": "T",
+      "displayName": "Synthetic application",
+      "description": "Target application"
+    },
+    {
+      "presentationId": "TARGET:workspace",
+      "parentPresentationId": "TARGET",
+      "order": 0,
+      "kind": "group",
+      "symbol": "W",
+      "displayName": "Workspace",
+      "description": "Application workspace"
+    },
+    {
+      "presentationId": "screen:SCR-0001",
+      "parentPresentationId": "TARGET:workspace",
+      "order": 0,
+      "kind": "screen",
+      "symbol": "S",
+      "displayName": "Customer workspace",
+      "description": "Recorded logical view",
+      "catalogNodeId": "screen:SCR-0001"
+    }
+  ]
+}

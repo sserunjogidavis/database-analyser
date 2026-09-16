@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "format": "apprecorder-catalog",
+  "nodes": [
+    {
+      "nodeId": "unknown:one",
+      "nodeType": "futureUnknownType",
+      "displayName": "Unsupported node",
+      "origin": "importedCatalog"
+    }
+  ],
+  "relationships": []
+}

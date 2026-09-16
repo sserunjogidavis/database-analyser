@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.alpine-digital-experts.com/legacy-modernization/catalog/v1/trusted-model-input.schema.json",
+  "title": "Trusted Model Input v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "format",
+    "sourceCatalogPath",
+    "summary",
+    "nodes",
+    "relationships",
+    "coverageGaps",
+    "excludedNodes"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "format": {
+      "enum": ["legacy-modernization-trusted-model-input", "apprecorder-trusted-model-input"]
+    },
+    "sourceCatalogPath": { "type": "string", "minLength": 1 },
+    "summary": { "$ref": "#/$defs/summary" },
+    "nodes": {
+      "type": "array",
+      "items": { "$ref": "catalog.schema.json#/$defs/node" }
+    },
+    "relationships": {
+      "type": "array",
+      "items": { "$ref": "catalog.schema.json#/$defs/relationship" }
+    },
+    "coverageGaps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/disposition" }
+    },
+    "excludedNodes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/disposition" }
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "format": { "const": "legacy-modernization-trusted-model-input" }
+        },
+        "required": ["format"]
+      },
+      "then": {
+        "properties": {
+          "relationships": {
+            "items": { "required": ["relationshipId"] }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "count": { "type": "integer", "minimum": 0 },
+    "summary": {
+      "type": "object",
+      "required": [
+        "completeCatalogNodeCount",
+        "completeCatalogRelationshipCount",
+        "trustedNodeCount",
+        "trustedRelationshipCount",
+        "coverageGapCount",
+        "excludedNodeCount"
+      ],
+      "properties": {
+        "completeCatalogNodeCount": { "$ref": "#/$defs/count" },
+        "completeCatalogRelationshipCount": { "$ref": "#/$defs/count" },
+        "trustedNodeCount": { "$ref": "#/$defs/count" },
+        "trustedRelationshipCount": { "$ref": "#/$defs/count" },
+        "coverageGapCount": { "$ref": "#/$defs/count" },
+        "excludedNodeCount": { "$ref": "#/$defs/count" }
+      },
+      "additionalProperties": false
+    },
+    "disposition": {
+      "type": "object",
+      "required": ["node", "references"],
+      "properties": {
+        "node": { "$ref": "catalog.schema.json#/$defs/node" },
+        "reason": { "type": ["string", "null"] },
+        "references": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/reference" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "reference": {
+      "type": "object",
+      "required": ["direction", "relatedNodeId", "relationship"],
+      "properties": {
+        "direction": { "enum": ["incoming", "outgoing"] },
+        "relatedNodeId": { "type": "string", "minLength": 1 },
+        "relationship": { "$ref": "catalog.schema.json#/$defs/relationship" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

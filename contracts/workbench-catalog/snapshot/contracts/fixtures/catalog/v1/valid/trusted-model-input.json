@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "format": "legacy-modernization-trusted-model-input",
+  "sourceCatalogPath": "catalog-nodes.json",
+  "summary": {
+    "completeCatalogNodeCount": 2,
+    "completeCatalogRelationshipCount": 1,
+    "trustedNodeCount": 2,
+    "trustedRelationshipCount": 1,
+    "coverageGapCount": 0,
+    "excludedNodeCount": 0
+  },
+  "nodes": [
+    {
+      "nodeId": "specification:customer-audit",
+      "nodeType": "specification",
+      "displayName": "Audit customer access",
+      "origin": "userSpecification",
+      "specificationKind": "technicalRequirement",
+      "specificationTextFormat": "plainText",
+      "specificationAudiences": ["codeGeneration", "testing"],
+      "content": "Record successful and rejected customer access.",
+      "evidenceClassification": "customerConfirmed",
+      "confirmedUsageStatus": "manuallyAdded",
+      "effectiveUsageStatus": "manuallyAdded",
+      "usageDecisionOrigin": "manualOverride"
+    },
+    {
+      "nodeId": "planned-component:customer-audit-service",
+      "nodeType": "plannedComponent",
+      "displayName": "Customer audit service",
+      "origin": "userSpecification",
+      "plannedComponentKind": "service",
+      "effectiveUsageStatus": "manuallyAdded"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipId": "rel:specification-service",
+      "sourceNodeId": "specification:customer-audit",
+      "kind": "requiresCreationOf",
+      "targetNodeId": "planned-component:customer-audit-service",
+      "origin": "userSpecification",
+      "evidenceClassification": "customerConfirmed"
+    }
+  ],
+  "coverageGaps": [],
+  "excludedNodes": []
+}

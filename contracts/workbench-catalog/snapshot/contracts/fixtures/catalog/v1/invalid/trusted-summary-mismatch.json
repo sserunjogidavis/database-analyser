@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "format": "apprecorder-trusted-model-input",
+  "sourceCatalogPath": "catalog-nodes.json",
+  "summary": {
+    "completeCatalogNodeCount": 0,
+    "completeCatalogRelationshipCount": 0,
+    "trustedNodeCount": 1,
+    "trustedRelationshipCount": 0,
+    "coverageGapCount": 0,
+    "excludedNodeCount": 0
+  },
+  "nodes": [],
+  "relationships": [],
+  "coverageGaps": [],
+  "excludedNodes": []
+}

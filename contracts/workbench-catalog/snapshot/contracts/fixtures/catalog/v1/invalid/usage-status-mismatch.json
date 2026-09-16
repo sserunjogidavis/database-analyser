@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "format": "apprecorder-catalog",
+  "nodes": [
+    {
+      "nodeId": "manual:55555555555545558555555555555555",
+      "nodeType": "manualNode",
+      "displayName": "Manually added dialog",
+      "origin": "manualAddition",
+      "confirmedUsageStatus": "invalid",
+      "effectiveUsageStatus": "manuallyAdded",
+      "usageDecisionOrigin": "manualOverride"
+    }
+  ],
+  "relationships": []
+}

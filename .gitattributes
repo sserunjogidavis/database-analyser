@@ -1,0 +1,10 @@
+* text=auto
+*.bat text eol=crlf
+*.jar binary
+*.json text eol=lf
+*.kts text eol=lf
+*.md text eol=lf
+*.ps1 text eol=lf
+*.sha256 text eol=lf
+*.yml text eol=lf
+gradlew text eol=lf

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "format": "legacy-modernization-catalog",
+  "nodes": [
+    {
+      "nodeId": "privacy:invalid",
+      "nodeType": "privacyClassification",
+      "displayName": "Invalid privacy assessment",
+      "origin": "databaseAnalysis",
+      "evidenceClassification": "inferred",
+      "piiStatus": "probablyNot",
+      "specialCategoryPiiStatus": "unknown",
+      "privacyAssessmentStatus": "inferred",
+      "maskingRequirement": "unknown"
+    }
+  ],
+  "relationships": []
+}

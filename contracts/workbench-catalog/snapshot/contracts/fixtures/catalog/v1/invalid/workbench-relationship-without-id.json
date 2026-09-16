@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "format": "legacy-modernization-catalog",
+  "nodes": [
+    {
+      "nodeId": "application:one",
+      "nodeType": "application",
+      "displayName": "Application",
+      "origin": "importedCatalog"
+    },
+    {
+      "nodeId": "screen:one",
+      "nodeType": "logicalView",
+      "displayName": "Workspace",
+      "origin": "importedCatalog"
+    }
+  ],
+  "relationships": [
+    {
+      "sourceNodeId": "application:one",
+      "kind": "contains",
+      "targetNodeId": "screen:one",
+      "origin": "importedCatalog"
+    }
+  ]
+}
