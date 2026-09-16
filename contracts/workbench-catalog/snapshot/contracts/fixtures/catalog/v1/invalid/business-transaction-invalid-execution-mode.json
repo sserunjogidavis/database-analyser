@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "format": "legacy-modernization-catalog",
+  "nodes": [
+    {
+      "nodeId": "trace:invalid-mode",
+      "nodeType": "executionTrace",
+      "displayName": "Invalid execution trace",
+      "origin": "manualRecording",
+      "executionMode": "secretlyAssumed",
+      "executionStatus": "completed",
+      "startedAtUtc": "2026-09-14T10:00:00Z"
+    }
+  ],
+  "relationships": []
+}

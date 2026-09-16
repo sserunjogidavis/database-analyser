@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "format": "apprecorder-trusted-model-input",
+  "sourceCatalogPath": "catalog-nodes.json",
+  "summary": {
+    "completeCatalogNodeCount": 2,
+    "completeCatalogRelationshipCount": 1,
+    "trustedNodeCount": 1,
+    "trustedRelationshipCount": 1,
+    "coverageGapCount": 0,
+    "excludedNodeCount": 0
+  },
+  "nodes": [
+    {
+      "nodeId": "specification:trusted",
+      "nodeType": "specification",
+      "displayName": "Trusted requirement",
+      "origin": "userSpecification",
+      "specificationKind": "functionalRequirement",
+      "specificationTextFormat": "plainText",
+      "specificationAudiences": ["codeGeneration"],
+      "content": "Provide the documented operation.",
+      "effectiveUsageStatus": "manuallyAdded"
+    }
+  ],
+  "relationships": [
+    {
+      "sourceNodeId": "specification:trusted",
+      "kind": "requiresCreationOf",
+      "targetNodeId": "planned-component:missing",
+      "origin": "userSpecification"
+    }
+  ],
+  "coverageGaps": [],
+  "excludedNodes": []
+}

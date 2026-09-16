@@ -1,0 +1,29 @@
+{
+  "lockFormatVersion": 1,
+  "source": {
+    "repository": "https://github.com/alpine-digital-experts/LegacyModernizationWorkbench",
+    "commit": "732de4ddf73969b31d1791bf454b0d924459b9f2",
+    "contractPath": "contracts/catalog/v1",
+    "contractVersion": "1-development"
+  },
+  "consumer": {
+    "repository": "https://github.com/alpine-digital-experts/database-analyser",
+    "adapterProfile": "database-analyser/v1-development",
+    "adapterProfileVersion": "0.1.0-development"
+  },
+  "bundle": {
+    "snapshotDirectory": "snapshot",
+    "manifest": "workbench-catalog.sha256",
+    "manifestSha256": "6418540943690c7c0e293b87812cc259a7ebef05dfeab750aaafdba32f0d159b",
+    "fileCount": 24,
+    "hashAlgorithm": "SHA-256",
+    "canonicalization": "UTF-8 text with LF line endings"
+  },
+  "upgradePolicy": {
+    "sourceOfTruth": "workbench",
+    "allowDirectSnapshotEdits": false,
+    "requireDedicatedUpgrade": true,
+    "requireSharedFixtures": true,
+    "requireGoldenWorkbenchImport": true
+  }
+}

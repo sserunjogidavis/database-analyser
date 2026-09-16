@@ -1,0 +1,540 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.alpine-digital-experts.com/legacy-modernization/catalog/v1/catalog.schema.json",
+  "title": "Legacy Modernization Catalog v1",
+  "description": "Platform-neutral catalog graph. This schema also accepts the AppRecorder apprecorder-catalog version 1 import profile.",
+  "type": "object",
+  "required": ["schemaVersion", "format", "nodes", "relationships"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "format": { "enum": ["legacy-modernization-catalog", "apprecorder-catalog"] },
+    "nodes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/node" }
+    },
+    "relationships": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/relationship" }
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": { "format": { "const": "legacy-modernization-catalog" } },
+        "required": ["format"]
+      },
+      "then": {
+        "properties": {
+          "relationships": {
+            "items": { "required": ["relationshipId"] }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "(?:Z|[+-]00:00)$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "screenRectangle": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 },
+        "isValid": {
+          "type": "boolean",
+          "description": "Read-only compatibility field emitted by the current AppRecorder ScreenRectangle serializer."
+        }
+      },
+      "additionalProperties": false
+    },
+    "nodeType": {
+      "enum": [
+        "application",
+        "applicationWindow",
+        "logicalView",
+        "observedState",
+        "region",
+        "viewGroup",
+        "viewInstance",
+        "transientSurface",
+        "menu",
+        "menuCommand",
+        "toolbarCommand",
+        "capture",
+        "element",
+        "action",
+        "manualNode",
+        "observation",
+        "attachment",
+        "annotation",
+        "businessTransaction",
+        "businessScenario",
+        "processStep",
+        "businessEvent",
+        "businessRole",
+        "executionTrace",
+        "executionStep",
+        "dataRelationship",
+        "privacyClassification",
+        "specification",
+        "plannedComponent",
+        "dataObject",
+        "businessRule",
+        "catalogReference"
+      ]
+    },
+    "nodeOrigin": {
+      "enum": [
+        "recorderProjection",
+        "automaticExploration",
+        "manualRecording",
+        "manualObservation",
+        "manualAddition",
+        "manualImport",
+        "projectKnowledge",
+        "importedCatalog",
+        "databaseAnalysis",
+        "sourceCodeAnalysis",
+        "businessAnalysis",
+        "userSpecification"
+      ]
+    },
+    "usageStatus": {
+      "enum": [
+        "automaticallyExecuted",
+        "notAutomaticallyExecuted",
+        "manuallyAdded",
+        "duplicate",
+        "invalid"
+      ]
+    },
+    "evidenceClassification": {
+      "enum": [
+        "observed",
+        "imported",
+        "customerConfirmed",
+        "consultantConfirmed",
+        "assumption",
+        "inferred",
+        "proposed",
+        "machineSuggestion"
+      ]
+    },
+    "relationshipKind": {
+      "enum": [
+        "contains",
+        "representsState",
+        "hasEvidence",
+        "hasAttachment",
+        "hasAnnotation",
+        "specifies",
+        "requiresCreationOf",
+        "constrains",
+        "dependsOn",
+        "invokes",
+        "producesResult",
+        "triggeredBy",
+        "references",
+        "readsData",
+        "writesData",
+        "displaysData",
+        "editsData",
+        "governedBy",
+        "appliesTo",
+        "controlsState",
+        "derivedFrom",
+        "instanceOf",
+        "represents",
+        "includes",
+        "mapsTo",
+        "createsData",
+        "deletesData",
+        "filtersData",
+        "sortsData",
+        "validates",
+        "transformsData",
+        "providedBy",
+        "hasScenario",
+        "hasStep",
+        "precedes",
+        "branchesTo",
+        "performedBy",
+        "usesApplication",
+        "usesUi",
+        "demonstrates",
+        "observedAs",
+        "indexes",
+        "referencesKey",
+        "firesOn",
+        "schedules",
+        "executes",
+        "returnsData",
+        "usesData",
+        "hasSourceMember",
+        "hasTargetMember",
+        "classifies"
+      ]
+    },
+    "node": {
+      "type": "object",
+      "required": ["nodeId", "nodeType", "displayName", "origin"],
+      "properties": {
+        "nodeId": { "$ref": "#/$defs/nonEmptyString" },
+        "nodeType": { "$ref": "#/$defs/nodeType" },
+        "displayName": { "type": "string" },
+        "origin": { "$ref": "#/$defs/nodeOrigin" },
+        "displayId": { "$ref": "#/$defs/nonEmptyString" },
+        "catalogKind": {
+          "enum": [
+            "application", "applicationWindow", "workspace", "viewGroup", "viewInstance",
+            "screen", "capture", "element", "menuBar", "menu", "menuCommand", "toolbar",
+            "toolbarCommand", "windowCommand", "workspaceCommand", "tab", "dockedRegion",
+            "form", "fieldGroup", "input", "selection", "command", "dataDisplay",
+            "dataCollection", "status", "notification", "dialog", "systemDialog",
+            "externalUi", "backgroundAction", "other"
+          ]
+        },
+        "screenId": { "$ref": "#/$defs/nonEmptyString" },
+        "uiTreePath": { "$ref": "#/$defs/nonEmptyString" },
+        "actionId": { "$ref": "#/$defs/nonEmptyString" },
+        "captureId": { "type": "string", "format": "uuid" },
+        "attachmentId": { "type": "string", "format": "uuid" },
+        "sessionId": { "type": "string", "format": "uuid" },
+        "sequenceNumber": { "type": "integer", "minimum": 0 },
+        "observedAtUtc": { "$ref": "#/$defs/utcTimestamp" },
+        "bounds": { "$ref": "#/$defs/screenRectangle" },
+        "controlType": { "type": "string" },
+        "uiElementFamily": {
+          "enum": [
+            "input", "selection", "command", "display", "collection", "structure",
+            "feedback", "other"
+          ]
+        },
+        "uiElementRole": { "$ref": "#/$defs/nonEmptyString" },
+        "automationId": { "type": "string" },
+        "className": { "type": "string" },
+        "automationName": { "type": "string" },
+        "isOffscreen": { "type": "boolean" },
+        "supportedPatterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "selectionState": { "enum": ["unknown", "notApplicable", "notSelected", "selected"] },
+        "expandCollapseState": {
+          "enum": ["unknown", "notApplicable", "collapsed", "expanded", "partiallyExpanded", "leaf"]
+        },
+        "toggleState": { "enum": ["unknown", "notApplicable", "off", "on", "indeterminate"] },
+        "resultKind": {
+          "enum": [
+            "internalUi", "dialogOrSystemDialog", "externalUi", "backgroundAction",
+            "noVisibleResult", "other"
+          ]
+        },
+        "evidenceClassification": { "$ref": "#/$defs/evidenceClassification" },
+        "suggestedUsageStatus": { "$ref": "#/$defs/usageStatus" },
+        "confirmedUsageStatus": { "$ref": "#/$defs/usageStatus" },
+        "effectiveUsageStatus": { "$ref": "#/$defs/usageStatus" },
+        "usageDecisionOrigin": { "enum": ["recorderSuggestion", "manualOverride"] },
+        "suggestedUsageConfidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "suggestedUsageReason": { "type": "string" },
+        "usageDecisionModifiedAtUtc": { "$ref": "#/$defs/utcTimestamp" },
+        "description": { "type": "string" },
+        "sourceReference": { "type": "string" },
+        "sourceLocation": { "type": "string" },
+        "adapterId": { "type": "string" },
+        "targetSurfaceKind": {
+          "enum": ["windowsDesktop", "webApplication", "ibmI5250", "terminal"]
+        },
+        "contentType": { "type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$" },
+        "sizeBytes": { "type": "integer", "minimum": 0 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "pixelWidth": { "type": "integer", "minimum": 1 },
+        "pixelHeight": { "type": "integer", "minimum": 1 },
+        "createdAtUtc": { "$ref": "#/$defs/utcTimestamp" },
+        "modifiedAtUtc": { "$ref": "#/$defs/utcTimestamp" },
+        "structuralFingerprint": { "type": "string" },
+        "commandId": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+        "shortcut": { "type": "string" },
+        "isEnabled": { "type": "boolean" },
+        "isChecked": { "type": "boolean" },
+        "isSeparator": { "type": "boolean" },
+        "toolbarRowIndex": { "type": "integer", "minimum": 0 },
+        "toolbarPositionIndex": { "type": "integer", "minimum": 0 },
+        "toolbarGroupIndex": { "type": "integer", "minimum": 0 },
+        "toolbarSeparatorBefore": { "type": "boolean" },
+        "iconSourceReference": { "type": "string" },
+        "iconBounds": { "$ref": "#/$defs/screenRectangle" },
+        "logicalViewKind": {
+          "enum": ["unknown", "workspace", "navigationDestination", "detail", "report", "terminalPanel"]
+        },
+        "regionRole": {
+          "enum": [
+            "unknown", "primaryContent", "navigation", "tool", "detail", "inspector",
+            "output", "toolbar", "status", "other"
+          ]
+        },
+        "supportsMultipleViews": { "type": "boolean" },
+        "viewInstanceKind": {
+          "enum": ["unknown", "document", "businessRecord", "toolView", "session", "other"]
+        },
+        "transientSurfaceKind": {
+          "enum": ["unknown", "menu", "contextMenu", "popup", "dialog", "systemDialog", "notification", "other"]
+        },
+        "actionKind": {
+          "enum": [
+            "unknown", "selectTab", "expand", "collapse", "toggleRegionVisibility",
+            "selectHierarchyNode", "scroll", "openMenu", "closeOverlay", "invokeNavigation",
+            "activateViewInstance", "create", "open", "close", "save", "delete", "submit",
+            "confirm", "cancel", "search", "filter", "sort", "select", "toggle", "import",
+            "export", "upload", "download", "print", "launchExternal", "startBackground",
+            "validate", "calculate", "authorize", "invokeIntegration", "other"
+          ]
+        },
+        "actionScope": {
+          "enum": [
+            "application", "applicationWindow", "workspace", "viewGroup", "viewInstance",
+            "selection", "dialog", "externalSystem", "background", "other"
+          ]
+        },
+        "actionRisk": { "enum": ["passive", "readOnlyNavigation", "potentialMutation", "prohibited", "unknown"] },
+        "actionOutcome": {
+          "enum": [
+            "executed", "noVisibleChange", "invokedWithoutCapture", "alreadyObserved",
+            "rejected", "blocked", "failed", "notExecutedReplanRequired"
+          ]
+        },
+        "annotationKind": {
+          "enum": [
+            "summary", "businessPurpose", "expectedBehavior", "requirement",
+            "acceptanceCriterion", "validationRule", "migrationNote", "specialCase", "freeForm"
+          ]
+        },
+        "annotationReviewStatus": { "enum": ["draft", "reviewRequired", "confirmed"] },
+        "businessTransactionKind": {
+          "enum": [
+            "dataMaintenance", "communication", "service", "order", "approval",
+            "inquiry", "reporting", "reconciliation", "other"
+          ]
+        },
+        "scenarioKind": { "enum": ["main", "alternative", "exception", "other"] },
+        "processStepKind": {
+          "enum": [
+            "userInteraction", "applicationAction", "decision", "dataOperation",
+            "integration", "manualWork", "wait", "start", "end", "other"
+          ]
+        },
+        "executionMode": { "enum": ["automatic", "assisted", "manual", "mixed"] },
+        "executionStatus": {
+          "enum": ["planned", "running", "completed", "failed", "cancelled"]
+        },
+        "actorKind": {
+          "enum": ["person", "businessRole", "system", "externalParty", "other"]
+        },
+        "startedAtUtc": { "$ref": "#/$defs/utcTimestamp" },
+        "completedAtUtc": { "$ref": "#/$defs/utcTimestamp" },
+        "businessGoal": { "type": "string" },
+        "preconditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmptyString" },
+          "uniqueItems": true
+        },
+        "postconditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmptyString" },
+          "uniqueItems": true
+        },
+        "dataLayer": { "enum": ["physical", "logical", "runtime", "integration"] },
+        "dataObjectKind": {
+          "enum": [
+            "dataSource", "namespace", "database", "schema", "table", "view", "column",
+            "materializedView", "index", "key", "primaryKey", "uniqueKey", "foreignKey",
+            "checkConstraint", "defaultConstraint", "partition", "sequence", "storedProcedure",
+            "function", "package", "trigger", "job", "schedule", "task", "synonym",
+            "entity", "field", "dataGroup", "recordType", "api", "file", "message",
+            "queue", "operation", "other"
+          ]
+        },
+        "dataClassification": {
+          "description": "General confidentiality or sensitivity class. This is separate from PII status.",
+          "enum": ["public", "internal", "confidential", "personal", "sensitive"]
+        },
+        "qualifiedName": { "type": "string" },
+        "dataType": { "type": "string" },
+        "isNullable": { "type": "boolean" },
+        "isKey": { "type": "boolean" },
+        "databaseVendorType": { "$ref": "#/$defs/nonEmptyString" },
+        "isUnique": { "type": "boolean" },
+        "isClustered": { "type": "boolean" },
+        "isDeclared": { "type": "boolean" },
+        "constraintEnforcement": {
+          "enum": ["enforced", "notEnforced", "unknown"]
+        },
+        "routineLanguage": { "$ref": "#/$defs/nonEmptyString" },
+        "triggerTiming": { "enum": ["before", "after", "insteadOf", "unknown"] },
+        "triggerEvents": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["insert", "update", "delete", "truncate", "ddl", "logon", "other"] }
+        },
+        "scheduleExpression": { "$ref": "#/$defs/nonEmptyString" },
+        "dataRelationshipKind": {
+          "enum": [
+            "foreignKeyCandidate", "join", "equivalence", "lookup", "lineage", "other"
+          ]
+        },
+        "piiStatus": { "enum": ["yes", "no", "unknown", "notApplicable"] },
+        "piiCategories": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "directIdentifier", "indirectIdentifier", "contact", "address", "financial",
+              "health", "biometric", "location", "credential", "onlineIdentifier",
+              "employment", "demographic", "other"
+            ]
+          }
+        },
+        "specialCategoryPiiStatus": {
+          "enum": ["yes", "no", "unknown", "notApplicable"]
+        },
+        "privacyAssessmentStatus": {
+          "enum": ["notAssessed", "inferred", "reviewRequired", "confirmed"]
+        },
+        "maskingRequirement": {
+          "enum": ["required", "notRequired", "conditional", "unknown"]
+        },
+        "classificationMethod": { "$ref": "#/$defs/nonEmptyString" },
+        "classificationRationale": { "type": "string" },
+        "assessedAtUtc": { "$ref": "#/$defs/utcTimestamp" },
+        "businessRuleKind": {
+          "enum": ["validation", "calculation", "authorization", "workflow", "mapping", "constraint", "other"]
+        },
+        "expression": { "type": "string" },
+        "specificationKind": {
+          "enum": [
+            "processDescription", "businessRequirement", "functionalRequirement",
+            "technicalRequirement", "acceptanceCriterion", "migrationConstraint",
+            "codeGenerationGuidance", "testScenario", "other"
+          ]
+        },
+        "specificationTextFormat": { "enum": ["plainText", "markdown"] },
+        "specificationAudiences": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["analysis", "architecture", "implementation", "codeGeneration", "testing", "migration"]
+          }
+        },
+        "content": { "type": "string" },
+        "plannedComponentKind": {
+          "enum": ["uiComponent", "dataObject", "businessRule", "service", "integration", "backgroundJob", "other"]
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "nodeType": { "const": "specification" } }, "required": ["nodeType"] },
+          "then": {
+            "required": ["specificationKind", "specificationTextFormat", "specificationAudiences", "content", "effectiveUsageStatus"]
+          }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "plannedComponent" } }, "required": ["nodeType"] },
+          "then": { "required": ["plannedComponentKind"] }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "dataObject" } }, "required": ["nodeType"] },
+          "then": { "required": ["dataObjectKind"] }
+        },
+        {
+          "if": {
+            "properties": {
+              "nodeType": { "const": "dataObject" },
+              "dataObjectKind": { "const": "other" }
+            },
+            "required": ["nodeType", "dataObjectKind"]
+          },
+          "then": { "required": ["databaseVendorType"] }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "dataRelationship" } }, "required": ["nodeType"] },
+          "then": { "required": ["dataRelationshipKind", "evidenceClassification"] }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "privacyClassification" } }, "required": ["nodeType"] },
+          "then": {
+            "required": [
+              "piiStatus", "specialCategoryPiiStatus", "privacyAssessmentStatus",
+              "maskingRequirement", "evidenceClassification"
+            ]
+          }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "businessRule" } }, "required": ["nodeType"] },
+          "then": { "required": ["businessRuleKind"] }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "businessTransaction" } }, "required": ["nodeType"] },
+          "then": { "required": ["businessTransactionKind", "businessGoal"] }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "businessScenario" } }, "required": ["nodeType"] },
+          "then": { "required": ["scenarioKind"] }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "processStep" } }, "required": ["nodeType"] },
+          "then": { "required": ["processStepKind"] }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "executionTrace" } }, "required": ["nodeType"] },
+          "then": { "required": ["executionMode", "executionStatus", "startedAtUtc"] }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "executionStep" } }, "required": ["nodeType"] },
+          "then": { "required": ["executionStatus", "sequenceNumber"] }
+        },
+        {
+          "if": { "properties": { "nodeType": { "const": "attachment" } }, "required": ["nodeType"] },
+          "then": { "required": ["attachmentId", "sourceReference", "contentType", "sizeBytes", "sha256", "createdAtUtc"] }
+        }
+      ]
+    },
+    "relationship": {
+      "type": "object",
+      "required": ["sourceNodeId", "kind", "targetNodeId", "origin"],
+      "properties": {
+        "relationshipId": { "$ref": "#/$defs/nonEmptyString" },
+        "sourceNodeId": { "$ref": "#/$defs/nonEmptyString" },
+        "kind": { "$ref": "#/$defs/relationshipKind" },
+        "targetNodeId": { "$ref": "#/$defs/nonEmptyString" },
+        "order": { "type": "integer", "minimum": 0 },
+        "origin": { "$ref": "#/$defs/nodeOrigin" },
+        "evidenceClassification": { "$ref": "#/$defs/evidenceClassification" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "inferenceMethod": { "$ref": "#/$defs/nonEmptyString" },
+        "role": { "type": "string" },
+        "cardinality": { "type": "string" },
+        "condition": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

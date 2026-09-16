@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "format": "apprecorder-catalog-presentation",
+  "rootPresentationId": "TARGET",
+  "items": [
+    {
+      "presentationId": "TARGET",
+      "order": 0,
+      "kind": "target",
+      "symbol": "T",
+      "displayName": "Synthetic application",
+      "description": "Target application"
+    },
+    {
+      "presentationId": "cycle:a",
+      "parentPresentationId": "cycle:b",
+      "order": 0,
+      "kind": "group",
+      "symbol": "A",
+      "displayName": "Cycle A",
+      "description": ""
+    },
+    {
+      "presentationId": "cycle:b",
+      "parentPresentationId": "cycle:a",
+      "order": 0,
+      "kind": "group",
+      "symbol": "B",
+      "displayName": "Cycle B",
+      "description": ""
+    }
+  ]
+}

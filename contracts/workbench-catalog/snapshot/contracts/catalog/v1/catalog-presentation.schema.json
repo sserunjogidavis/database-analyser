@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.alpine-digital-experts.com/legacy-modernization/catalog/v1/catalog-presentation.schema.json",
+  "title": "Catalog presentation projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "format", "rootPresentationId", "items"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "format": {
+      "enum": [
+        "apprecorder-catalog-presentation",
+        "legacy-modernization-catalog-presentation"
+      ]
+    },
+    "rootPresentationId": { "$ref": "#/$defs/id" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100000,
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "presentationId",
+        "order",
+        "kind",
+        "symbol",
+        "displayName",
+        "description"
+      ],
+      "properties": {
+        "presentationId": { "$ref": "#/$defs/id" },
+        "parentPresentationId": {
+          "oneOf": [
+            { "$ref": "#/$defs/id" },
+            { "type": "null" }
+          ]
+        },
+        "order": { "type": "integer", "minimum": 0 },
+        "kind": {
+          "enum": [
+            "target",
+            "group",
+            "workspaceRegion",
+            "screen",
+            "menuItem",
+            "applicationCommand",
+            "windowCommand",
+            "stateGroup",
+            "capture",
+            "attachment"
+          ]
+        },
+        "symbol": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "description": { "type": "string", "maxLength": 4096 },
+        "catalogNodeId": { "$ref": "#/$defs/id" }
+      }
+    }
+  }
+}

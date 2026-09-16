@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "format": "legacy-modernization-catalog",
+  "nodes": [
+    {
+      "nodeId": "element:invalid-family",
+      "nodeType": "element",
+      "displayName": "Invalid family",
+      "origin": "businessAnalysis",
+      "catalogKind": "input",
+      "uiElementFamily": "vendorSpecificWidget",
+      "uiElementRole": "textInput"
+    }
+  ],
+  "relationships": []
+}

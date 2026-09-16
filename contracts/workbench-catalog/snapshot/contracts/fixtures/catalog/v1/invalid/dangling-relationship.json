@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "format": "apprecorder-catalog",
+  "nodes": [
+    {
+      "nodeId": "screen:SCR-0001",
+      "nodeType": "logicalView",
+      "displayName": "Customer workspace",
+      "origin": "recorderProjection"
+    }
+  ],
+  "relationships": [
+    {
+      "sourceNodeId": "screen:SCR-0001",
+      "kind": "hasEvidence",
+      "targetNodeId": "capture:missing",
+      "origin": "recorderProjection"
+    }
+  ]
+}

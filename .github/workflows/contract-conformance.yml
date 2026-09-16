@@ -1,0 +1,29 @@
+name: Contract conformance
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify-pinned-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Verify Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Verify pinned Workbench contract
+        run: ./gradlew check

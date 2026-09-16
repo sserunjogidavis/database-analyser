@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "format": "apprecorder-catalog",
+  "nodes": [
+    {
+      "nodeId": "screen:SCR-0001",
+      "nodeType": "logicalView",
+      "displayName": "First view",
+      "origin": "recorderProjection"
+    },
+    {
+      "nodeId": "screen:SCR-0001",
+      "nodeType": "logicalView",
+      "displayName": "Conflicting view",
+      "origin": "manualAddition"
+    }
+  ],
+  "relationships": []
+}

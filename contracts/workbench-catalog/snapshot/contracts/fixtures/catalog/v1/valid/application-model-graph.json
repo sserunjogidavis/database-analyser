@@ -1,0 +1,1163 @@
+{
+  "schemaVersion": 1,
+  "format": "legacy-modernization-catalog",
+  "nodes": [
+    {
+      "nodeId": "application:customer-workspace",
+      "nodeType": "application",
+      "displayName": "Customer workspace",
+      "origin": "businessAnalysis",
+      "catalogKind": "application"
+    },
+    {
+      "nodeId": "window:main",
+      "nodeType": "applicationWindow",
+      "displayName": "Main window",
+      "origin": "automaticExploration",
+      "catalogKind": "applicationWindow"
+    },
+    {
+      "nodeId": "menu:application",
+      "nodeType": "menu",
+      "displayName": "Application menu",
+      "origin": "automaticExploration",
+      "catalogKind": "menuBar"
+    },
+    {
+      "nodeId": "menu-command:save",
+      "nodeType": "menuCommand",
+      "displayName": "Save",
+      "origin": "automaticExploration",
+      "catalogKind": "menuCommand"
+    },
+    {
+      "nodeId": "toolbar-command:save",
+      "nodeType": "toolbarCommand",
+      "displayName": "Save",
+      "origin": "automaticExploration",
+      "catalogKind": "toolbarCommand"
+    },
+    {
+      "nodeId": "region:workspace",
+      "nodeType": "region",
+      "displayName": "Workspace",
+      "origin": "automaticExploration",
+      "catalogKind": "workspace",
+      "regionRole": "primaryContent"
+    },
+    {
+      "nodeId": "view-group:customers",
+      "nodeType": "viewGroup",
+      "displayName": "Customer views",
+      "origin": "automaticExploration",
+      "catalogKind": "viewGroup",
+      "supportsMultipleViews": true
+    },
+    {
+      "nodeId": "logical-view:customer-detail",
+      "nodeType": "logicalView",
+      "displayName": "Customer detail",
+      "origin": "businessAnalysis",
+      "catalogKind": "screen",
+      "logicalViewKind": "detail"
+    },
+    {
+      "nodeId": "view-instance:customer-detail",
+      "nodeType": "viewInstance",
+      "displayName": "Open customer detail",
+      "origin": "automaticExploration",
+      "catalogKind": "viewInstance",
+      "viewInstanceKind": "businessRecord"
+    },
+    {
+      "nodeId": "element:customer-tab",
+      "nodeType": "element",
+      "displayName": "Customer detail tab",
+      "origin": "automaticExploration",
+      "catalogKind": "tab",
+      "uiElementFamily": "selection",
+      "uiElementRole": "tab",
+      "selectionState": "selected"
+    },
+    {
+      "nodeId": "element:customer-number",
+      "nodeType": "element",
+      "displayName": "Customer number",
+      "origin": "automaticExploration",
+      "catalogKind": "input",
+      "uiElementFamily": "input",
+      "uiElementRole": "textInput"
+    },
+    {
+      "nodeId": "region:explorer",
+      "nodeType": "region",
+      "displayName": "Customer explorer",
+      "origin": "automaticExploration",
+      "catalogKind": "dockedRegion",
+      "regionRole": "navigation"
+    },
+    {
+      "nodeId": "element:explorer-filter",
+      "nodeType": "element",
+      "displayName": "Filter customers",
+      "origin": "automaticExploration",
+      "catalogKind": "input",
+      "uiElementFamily": "input",
+      "uiElementRole": "filterInput"
+    },
+    {
+      "nodeId": "element:explorer-list",
+      "nodeType": "element",
+      "displayName": "Customers",
+      "origin": "automaticExploration",
+      "catalogKind": "dataCollection",
+      "uiElementFamily": "collection",
+      "uiElementRole": "tree"
+    },
+    {
+      "nodeId": "element:status",
+      "nodeType": "element",
+      "displayName": "Selection status",
+      "origin": "automaticExploration",
+      "catalogKind": "status",
+      "uiElementFamily": "feedback",
+      "uiElementRole": "dynamicStatusText"
+    },
+    {
+      "nodeId": "action:activate-customer-view",
+      "nodeType": "action",
+      "displayName": "Activate customer view",
+      "origin": "automaticExploration",
+      "actionKind": "activateViewInstance",
+      "actionScope": "viewGroup",
+      "actionRisk": "readOnlyNavigation"
+    },
+    {
+      "nodeId": "action:save-customer",
+      "nodeType": "action",
+      "displayName": "Save active customer",
+      "origin": "businessAnalysis",
+      "actionKind": "save",
+      "actionScope": "viewInstance",
+      "actionRisk": "potentialMutation"
+    },
+    {
+      "nodeId": "action:filter-customers",
+      "nodeType": "action",
+      "displayName": "Filter customers",
+      "origin": "automaticExploration",
+      "actionKind": "filter",
+      "actionScope": "workspace",
+      "actionRisk": "passive"
+    },
+    {
+      "nodeId": "data:customer",
+      "nodeType": "dataObject",
+      "displayName": "Customer",
+      "origin": "businessAnalysis",
+      "dataLayer": "logical",
+      "dataObjectKind": "entity"
+    },
+    {
+      "nodeId": "data:customer-number",
+      "nodeType": "dataObject",
+      "displayName": "Customer number",
+      "origin": "businessAnalysis",
+      "dataLayer": "logical",
+      "dataObjectKind": "field",
+      "dataType": "identifier",
+      "dataClassification": "internal"
+    },
+    {
+      "nodeId": "data-group:customer-header",
+      "nodeType": "dataObject",
+      "displayName": "Customer header",
+      "origin": "businessAnalysis",
+      "dataLayer": "logical",
+      "dataObjectKind": "dataGroup"
+    },
+    {
+      "nodeId": "database:crm",
+      "nodeType": "dataObject",
+      "displayName": "CRM database",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "database",
+      "qualifiedName": "CRM"
+    },
+    {
+      "nodeId": "table:crm.customer",
+      "nodeType": "dataObject",
+      "displayName": "Customer table",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "table",
+      "qualifiedName": "CRM.CUSTOMER"
+    },
+    {
+      "nodeId": "column:crm.customer.customer_number",
+      "nodeType": "dataObject",
+      "displayName": "Customer number",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "column",
+      "qualifiedName": "CRM.CUSTOMER.CUSTOMER_NUMBER",
+      "dataType": "VARCHAR(30)",
+      "isNullable": false,
+      "isKey": true
+    },
+    {
+      "nodeId": "table:crm.order_header",
+      "nodeType": "dataObject",
+      "displayName": "Order header table",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "table",
+      "qualifiedName": "CRM.ORDER_HEADER"
+    },
+    {
+      "nodeId": "column:crm.order_header.customer_number",
+      "nodeType": "dataObject",
+      "displayName": "Customer number reference",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "column",
+      "qualifiedName": "CRM.ORDER_HEADER.CUSTOMER_NUMBER",
+      "dataType": "VARCHAR(30)",
+      "isNullable": false
+    },
+    {
+      "nodeId": "rule:customer-number-required",
+      "nodeType": "businessRule",
+      "displayName": "Customer number is required",
+      "origin": "businessAnalysis",
+      "businessRuleKind": "validation"
+    },
+    {
+      "nodeId": "role:customer-clerk",
+      "nodeType": "businessRole",
+      "displayName": "Customer service clerk",
+      "origin": "businessAnalysis",
+      "actorKind": "businessRole"
+    },
+    {
+      "nodeId": "transaction:create-customer",
+      "nodeType": "businessTransaction",
+      "displayName": "Create customer",
+      "origin": "businessAnalysis",
+      "businessTransactionKind": "dataMaintenance",
+      "businessGoal": "Create a customer that can be used in subsequent orders.",
+      "preconditions": ["The clerk is authorized to maintain customers."],
+      "postconditions": ["A valid customer record exists."]
+    },
+    {
+      "nodeId": "scenario:create-customer:main",
+      "nodeType": "businessScenario",
+      "displayName": "Create customer - main scenario",
+      "origin": "businessAnalysis",
+      "scenarioKind": "main"
+    },
+    {
+      "nodeId": "step:create-customer:open",
+      "nodeType": "processStep",
+      "displayName": "Open customer entry",
+      "origin": "businessAnalysis",
+      "processStepKind": "userInteraction"
+    },
+    {
+      "nodeId": "step:create-customer:number",
+      "nodeType": "processStep",
+      "displayName": "Enter customer number",
+      "origin": "businessAnalysis",
+      "processStepKind": "dataOperation"
+    },
+    {
+      "nodeId": "step:create-customer:save",
+      "nodeType": "processStep",
+      "displayName": "Save customer",
+      "origin": "businessAnalysis",
+      "processStepKind": "applicationAction"
+    },
+    {
+      "nodeId": "event:customer-created",
+      "nodeType": "businessEvent",
+      "displayName": "Customer created",
+      "origin": "businessAnalysis"
+    },
+    {
+      "nodeId": "trace:create-customer:001",
+      "nodeType": "executionTrace",
+      "displayName": "Observed creation of customer C-1001",
+      "origin": "manualRecording",
+      "executionMode": "manual",
+      "executionStatus": "completed",
+      "startedAtUtc": "2026-09-14T10:00:00Z",
+      "completedAtUtc": "2026-09-14T10:01:10Z"
+    },
+    {
+      "nodeId": "trace-step:create-customer:001:0",
+      "nodeType": "executionStep",
+      "displayName": "Opened customer entry",
+      "origin": "manualRecording",
+      "executionStatus": "completed",
+      "sequenceNumber": 0,
+      "observedAtUtc": "2026-09-14T10:00:05Z"
+    },
+    {
+      "nodeId": "trace-step:create-customer:001:1",
+      "nodeType": "executionStep",
+      "displayName": "Entered customer number",
+      "origin": "manualRecording",
+      "executionStatus": "completed",
+      "sequenceNumber": 1,
+      "observedAtUtc": "2026-09-14T10:00:31Z"
+    },
+    {
+      "nodeId": "trace-step:create-customer:001:2",
+      "nodeType": "executionStep",
+      "displayName": "Saved customer",
+      "origin": "manualRecording",
+      "executionStatus": "completed",
+      "sequenceNumber": 2,
+      "observedAtUtc": "2026-09-14T10:01:02Z"
+    },
+    {
+      "nodeId": "capture:create-customer:save",
+      "nodeType": "capture",
+      "displayName": "Customer saved",
+      "origin": "manualRecording",
+      "captureId": "a1111111-1111-4111-8111-111111111111",
+      "observedAtUtc": "2026-09-14T10:01:02Z"
+    },
+    {
+      "nodeId": "key:crm.customer.pk_customer",
+      "nodeType": "dataObject",
+      "displayName": "PK_CUSTOMER",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "primaryKey",
+      "qualifiedName": "CRM.CUSTOMER.PK_CUSTOMER",
+      "isDeclared": true,
+      "constraintEnforcement": "enforced"
+    },
+    {
+      "nodeId": "index:crm.customer.ix_customer_number",
+      "nodeType": "dataObject",
+      "displayName": "IX_CUSTOMER_NUMBER",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "index",
+      "qualifiedName": "CRM.CUSTOMER.IX_CUSTOMER_NUMBER",
+      "isUnique": true,
+      "isClustered": false
+    },
+    {
+      "nodeId": "package:crm.customer_api",
+      "nodeType": "dataObject",
+      "displayName": "CUSTOMER_API",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "package",
+      "qualifiedName": "CRM.CUSTOMER_API",
+      "databaseVendorType": "ORACLE PACKAGE"
+    },
+    {
+      "nodeId": "procedure:crm.customer_api.create_customer",
+      "nodeType": "dataObject",
+      "displayName": "CREATE_CUSTOMER",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "storedProcedure",
+      "qualifiedName": "CRM.CUSTOMER_API.CREATE_CUSTOMER",
+      "routineLanguage": "PL/SQL"
+    },
+    {
+      "nodeId": "function:crm.customer_api.validate_number",
+      "nodeType": "dataObject",
+      "displayName": "VALIDATE_NUMBER",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "function",
+      "qualifiedName": "CRM.CUSTOMER_API.VALIDATE_NUMBER",
+      "routineLanguage": "PL/SQL"
+    },
+    {
+      "nodeId": "trigger:crm.customer.trg_customer_audit",
+      "nodeType": "dataObject",
+      "displayName": "TRG_CUSTOMER_AUDIT",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "trigger",
+      "qualifiedName": "CRM.CUSTOMER.TRG_CUSTOMER_AUDIT",
+      "triggerTiming": "after",
+      "triggerEvents": ["insert", "update"]
+    },
+    {
+      "nodeId": "schedule:crm.nightly",
+      "nodeType": "dataObject",
+      "displayName": "NIGHTLY_SCHEDULE",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "schedule",
+      "qualifiedName": "CRM.NIGHTLY_SCHEDULE",
+      "scheduleExpression": "FREQ=DAILY;BYHOUR=2"
+    },
+    {
+      "nodeId": "job:crm.customer-validation",
+      "nodeType": "dataObject",
+      "displayName": "CUSTOMER_VALIDATION_JOB",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "job",
+      "qualifiedName": "CRM.CUSTOMER_VALIDATION_JOB"
+    },
+    {
+      "nodeId": "data-relationship:order-customer-number",
+      "nodeType": "dataRelationship",
+      "displayName": "Order customer-number relationship candidate",
+      "origin": "databaseAnalysis",
+      "evidenceClassification": "inferred",
+      "dataRelationshipKind": "foreignKeyCandidate"
+    },
+    {
+      "nodeId": "privacy:customer-number",
+      "nodeType": "privacyClassification",
+      "displayName": "Customer-number privacy assessment",
+      "origin": "businessAnalysis",
+      "evidenceClassification": "consultantConfirmed",
+      "piiStatus": "yes",
+      "piiCategories": ["directIdentifier"],
+      "specialCategoryPiiStatus": "no",
+      "privacyAssessmentStatus": "confirmed",
+      "maskingRequirement": "required",
+      "classificationMethod": "business glossary review",
+      "classificationRationale": "The value uniquely identifies a customer in the application.",
+      "assessedAtUtc": "2026-09-15T08:00:00Z"
+    },
+    {
+      "nodeId": "table:crm.customer_contact",
+      "nodeType": "dataObject",
+      "displayName": "Customer contact table",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "table",
+      "qualifiedName": "CRM.CUSTOMER_CONTACT"
+    },
+    {
+      "nodeId": "column:crm.customer_contact.customer_number",
+      "nodeType": "dataObject",
+      "displayName": "Customer number",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "column",
+      "qualifiedName": "CRM.CUSTOMER_CONTACT.CUSTOMER_NUMBER",
+      "dataType": "VARCHAR(30)",
+      "isNullable": false
+    },
+    {
+      "nodeId": "key:crm.customer_contact.fk_contact_customer",
+      "nodeType": "dataObject",
+      "displayName": "FK_CONTACT_CUSTOMER",
+      "origin": "databaseAnalysis",
+      "dataLayer": "physical",
+      "dataObjectKind": "foreignKey",
+      "qualifiedName": "CRM.CUSTOMER_CONTACT.FK_CONTACT_CUSTOMER",
+      "isDeclared": true,
+      "constraintEnforcement": "enforced"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipId": "rel:application-window",
+      "sourceNodeId": "application:customer-workspace",
+      "kind": "contains",
+      "targetNodeId": "window:main",
+      "order": 0,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:application-logical-view",
+      "sourceNodeId": "application:customer-workspace",
+      "kind": "contains",
+      "targetNodeId": "logical-view:customer-detail",
+      "order": 1,
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:application-customer-data",
+      "sourceNodeId": "application:customer-workspace",
+      "kind": "contains",
+      "targetNodeId": "data:customer",
+      "order": 2,
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:application-customer-header",
+      "sourceNodeId": "application:customer-workspace",
+      "kind": "contains",
+      "targetNodeId": "data-group:customer-header",
+      "order": 3,
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:application-database",
+      "sourceNodeId": "application:customer-workspace",
+      "kind": "references",
+      "targetNodeId": "database:crm",
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:window-menu",
+      "sourceNodeId": "window:main",
+      "kind": "contains",
+      "targetNodeId": "menu:application",
+      "order": 0,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:window-toolbar-command",
+      "sourceNodeId": "window:main",
+      "kind": "contains",
+      "targetNodeId": "toolbar-command:save",
+      "order": 1,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:window-workspace",
+      "sourceNodeId": "window:main",
+      "kind": "contains",
+      "targetNodeId": "region:workspace",
+      "order": 2,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:window-status",
+      "sourceNodeId": "window:main",
+      "kind": "contains",
+      "targetNodeId": "element:status",
+      "order": 3,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:menu-save-command",
+      "sourceNodeId": "menu:application",
+      "kind": "contains",
+      "targetNodeId": "menu-command:save",
+      "order": 0,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:workspace-view-group",
+      "sourceNodeId": "region:workspace",
+      "kind": "contains",
+      "targetNodeId": "view-group:customers",
+      "order": 0,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:workspace-explorer",
+      "sourceNodeId": "region:workspace",
+      "kind": "contains",
+      "targetNodeId": "region:explorer",
+      "order": 1,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:view-group-tab",
+      "sourceNodeId": "view-group:customers",
+      "kind": "contains",
+      "targetNodeId": "element:customer-tab",
+      "order": 0,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:view-group-instance",
+      "sourceNodeId": "view-group:customers",
+      "kind": "contains",
+      "targetNodeId": "view-instance:customer-detail",
+      "order": 1,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:view-instance-definition",
+      "sourceNodeId": "view-instance:customer-detail",
+      "kind": "instanceOf",
+      "targetNodeId": "logical-view:customer-detail",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:view-instance-field",
+      "sourceNodeId": "view-instance:customer-detail",
+      "kind": "contains",
+      "targetNodeId": "element:customer-number",
+      "order": 0,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:tab-instance",
+      "sourceNodeId": "element:customer-tab",
+      "kind": "represents",
+      "targetNodeId": "view-instance:customer-detail",
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:tab-activate",
+      "sourceNodeId": "element:customer-tab",
+      "kind": "invokes",
+      "targetNodeId": "action:activate-customer-view",
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:activate-target",
+      "sourceNodeId": "action:activate-customer-view",
+      "kind": "appliesTo",
+      "targetNodeId": "view-instance:customer-detail",
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:menu-save-action",
+      "sourceNodeId": "menu-command:save",
+      "kind": "invokes",
+      "targetNodeId": "action:save-customer",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:toolbar-save-action",
+      "sourceNodeId": "toolbar-command:save",
+      "kind": "invokes",
+      "targetNodeId": "action:save-customer",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:save-target",
+      "sourceNodeId": "action:save-customer",
+      "kind": "appliesTo",
+      "targetNodeId": "view-instance:customer-detail",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:save-data",
+      "sourceNodeId": "action:save-customer",
+      "kind": "writesData",
+      "targetNodeId": "data-group:customer-header",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:explorer-filter",
+      "sourceNodeId": "region:explorer",
+      "kind": "contains",
+      "targetNodeId": "element:explorer-filter",
+      "order": 0,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:explorer-list",
+      "sourceNodeId": "region:explorer",
+      "kind": "contains",
+      "targetNodeId": "element:explorer-list",
+      "order": 1,
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:filter-invokes",
+      "sourceNodeId": "element:explorer-filter",
+      "kind": "invokes",
+      "targetNodeId": "action:filter-customers",
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:filter-data",
+      "sourceNodeId": "action:filter-customers",
+      "kind": "filtersData",
+      "targetNodeId": "data-group:customer-header",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:filter-list",
+      "sourceNodeId": "action:filter-customers",
+      "kind": "controlsState",
+      "targetNodeId": "element:explorer-list",
+      "origin": "automaticExploration"
+    },
+    {
+      "relationshipId": "rel:customer-field",
+      "sourceNodeId": "data:customer",
+      "kind": "contains",
+      "targetNodeId": "data:customer-number",
+      "order": 0,
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:customer-header-field",
+      "sourceNodeId": "data-group:customer-header",
+      "kind": "includes",
+      "targetNodeId": "data:customer-number",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:input-customer-number",
+      "sourceNodeId": "element:customer-number",
+      "kind": "editsData",
+      "targetNodeId": "data:customer-number",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:database-customer-table",
+      "sourceNodeId": "database:crm",
+      "kind": "contains",
+      "targetNodeId": "table:crm.customer",
+      "order": 0,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:database-order-table",
+      "sourceNodeId": "database:crm",
+      "kind": "contains",
+      "targetNodeId": "table:crm.order_header",
+      "order": 1,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:customer-table-column",
+      "sourceNodeId": "table:crm.customer",
+      "kind": "contains",
+      "targetNodeId": "column:crm.customer.customer_number",
+      "order": 0,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:order-table-column",
+      "sourceNodeId": "table:crm.order_header",
+      "kind": "contains",
+      "targetNodeId": "column:crm.order_header.customer_number",
+      "order": 0,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:customer-column-logical-field",
+      "sourceNodeId": "column:crm.customer.customer_number",
+      "kind": "mapsTo",
+      "targetNodeId": "data:customer-number",
+      "origin": "businessAnalysis",
+      "evidenceClassification": "consultantConfirmed"
+    },
+    {
+      "relationshipId": "rel:order-column-logical-field",
+      "sourceNodeId": "column:crm.order_header.customer_number",
+      "kind": "mapsTo",
+      "targetNodeId": "data:customer-number",
+      "origin": "databaseAnalysis",
+      "evidenceClassification": "inferred",
+      "confidence": 0.88,
+      "inferenceMethod": "qualified-name and join analysis"
+    },
+    {
+      "relationshipId": "rel:rule-customer-number",
+      "sourceNodeId": "rule:customer-number-required",
+      "kind": "validates",
+      "targetNodeId": "data:customer-number",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:save-rule",
+      "sourceNodeId": "action:save-customer",
+      "kind": "governedBy",
+      "targetNodeId": "rule:customer-number-required",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:transaction-application",
+      "sourceNodeId": "transaction:create-customer",
+      "kind": "usesApplication",
+      "targetNodeId": "application:customer-workspace",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:transaction-role",
+      "sourceNodeId": "transaction:create-customer",
+      "kind": "performedBy",
+      "targetNodeId": "role:customer-clerk",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:transaction-scenario",
+      "sourceNodeId": "transaction:create-customer",
+      "kind": "hasScenario",
+      "targetNodeId": "scenario:create-customer:main",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:scenario-open-step",
+      "sourceNodeId": "scenario:create-customer:main",
+      "kind": "hasStep",
+      "targetNodeId": "step:create-customer:open",
+      "order": 0,
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:scenario-number-step",
+      "sourceNodeId": "scenario:create-customer:main",
+      "kind": "hasStep",
+      "targetNodeId": "step:create-customer:number",
+      "order": 1,
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:scenario-save-step",
+      "sourceNodeId": "scenario:create-customer:main",
+      "kind": "hasStep",
+      "targetNodeId": "step:create-customer:save",
+      "order": 2,
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:open-precedes-number",
+      "sourceNodeId": "step:create-customer:open",
+      "kind": "precedes",
+      "targetNodeId": "step:create-customer:number",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:number-precedes-save",
+      "sourceNodeId": "step:create-customer:number",
+      "kind": "precedes",
+      "targetNodeId": "step:create-customer:save",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:open-step-action",
+      "sourceNodeId": "step:create-customer:open",
+      "kind": "invokes",
+      "targetNodeId": "action:activate-customer-view",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:number-step-ui",
+      "sourceNodeId": "step:create-customer:number",
+      "kind": "usesUi",
+      "targetNodeId": "element:customer-number",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:number-step-data",
+      "sourceNodeId": "step:create-customer:number",
+      "kind": "writesData",
+      "targetNodeId": "data:customer-number",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:number-step-role",
+      "sourceNodeId": "step:create-customer:number",
+      "kind": "performedBy",
+      "targetNodeId": "role:customer-clerk",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:save-step-action",
+      "sourceNodeId": "step:create-customer:save",
+      "kind": "invokes",
+      "targetNodeId": "action:save-customer",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:transaction-result",
+      "sourceNodeId": "transaction:create-customer",
+      "kind": "producesResult",
+      "targetNodeId": "event:customer-created",
+      "origin": "businessAnalysis"
+    },
+    {
+      "relationshipId": "rel:trace-scenario",
+      "sourceNodeId": "trace:create-customer:001",
+      "kind": "demonstrates",
+      "targetNodeId": "scenario:create-customer:main",
+      "origin": "manualRecording",
+      "evidenceClassification": "observed"
+    },
+    {
+      "relationshipId": "rel:trace-role",
+      "sourceNodeId": "trace:create-customer:001",
+      "kind": "performedBy",
+      "targetNodeId": "role:customer-clerk",
+      "origin": "manualRecording",
+      "evidenceClassification": "observed"
+    },
+    {
+      "relationshipId": "rel:trace-step-0",
+      "sourceNodeId": "trace:create-customer:001",
+      "kind": "hasStep",
+      "targetNodeId": "trace-step:create-customer:001:0",
+      "order": 0,
+      "origin": "manualRecording"
+    },
+    {
+      "relationshipId": "rel:trace-step-1",
+      "sourceNodeId": "trace:create-customer:001",
+      "kind": "hasStep",
+      "targetNodeId": "trace-step:create-customer:001:1",
+      "order": 1,
+      "origin": "manualRecording"
+    },
+    {
+      "relationshipId": "rel:trace-step-2",
+      "sourceNodeId": "trace:create-customer:001",
+      "kind": "hasStep",
+      "targetNodeId": "trace-step:create-customer:001:2",
+      "order": 2,
+      "origin": "manualRecording"
+    },
+    {
+      "relationshipId": "rel:trace-step-0-observation",
+      "sourceNodeId": "trace-step:create-customer:001:0",
+      "kind": "observedAs",
+      "targetNodeId": "step:create-customer:open",
+      "origin": "manualRecording"
+    },
+    {
+      "relationshipId": "rel:trace-step-1-observation",
+      "sourceNodeId": "trace-step:create-customer:001:1",
+      "kind": "observedAs",
+      "targetNodeId": "step:create-customer:number",
+      "origin": "manualRecording"
+    },
+    {
+      "relationshipId": "rel:trace-step-2-observation",
+      "sourceNodeId": "trace-step:create-customer:001:2",
+      "kind": "observedAs",
+      "targetNodeId": "step:create-customer:save",
+      "origin": "manualRecording"
+    },
+    {
+      "relationshipId": "rel:trace-step-1-ui",
+      "sourceNodeId": "trace-step:create-customer:001:1",
+      "kind": "usesUi",
+      "targetNodeId": "element:customer-number",
+      "origin": "manualRecording",
+      "evidenceClassification": "observed"
+    },
+    {
+      "relationshipId": "rel:trace-step-2-action",
+      "sourceNodeId": "trace-step:create-customer:001:2",
+      "kind": "invokes",
+      "targetNodeId": "action:save-customer",
+      "origin": "manualRecording",
+      "evidenceClassification": "observed"
+    },
+    {
+      "relationshipId": "rel:trace-step-2-evidence",
+      "sourceNodeId": "trace-step:create-customer:001:2",
+      "kind": "hasEvidence",
+      "targetNodeId": "capture:create-customer:save",
+      "origin": "manualRecording",
+      "evidenceClassification": "observed"
+    },
+    {
+      "relationshipId": "rel:customer-table-key",
+      "sourceNodeId": "table:crm.customer",
+      "kind": "contains",
+      "targetNodeId": "key:crm.customer.pk_customer",
+      "order": 1,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:customer-key-column",
+      "sourceNodeId": "key:crm.customer.pk_customer",
+      "kind": "includes",
+      "targetNodeId": "column:crm.customer.customer_number",
+      "order": 0,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:customer-table-index",
+      "sourceNodeId": "table:crm.customer",
+      "kind": "contains",
+      "targetNodeId": "index:crm.customer.ix_customer_number",
+      "order": 2,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:customer-index-table",
+      "sourceNodeId": "index:crm.customer.ix_customer_number",
+      "kind": "indexes",
+      "targetNodeId": "table:crm.customer",
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:customer-index-column",
+      "sourceNodeId": "index:crm.customer.ix_customer_number",
+      "kind": "includes",
+      "targetNodeId": "column:crm.customer.customer_number",
+      "order": 0,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:database-package",
+      "sourceNodeId": "database:crm",
+      "kind": "contains",
+      "targetNodeId": "package:crm.customer_api",
+      "order": 2,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:package-create-procedure",
+      "sourceNodeId": "package:crm.customer_api",
+      "kind": "contains",
+      "targetNodeId": "procedure:crm.customer_api.create_customer",
+      "order": 0,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:package-validate-function",
+      "sourceNodeId": "package:crm.customer_api",
+      "kind": "contains",
+      "targetNodeId": "function:crm.customer_api.validate_number",
+      "order": 1,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:create-procedure-table",
+      "sourceNodeId": "procedure:crm.customer_api.create_customer",
+      "kind": "writesData",
+      "targetNodeId": "table:crm.customer",
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:create-procedure-validation",
+      "sourceNodeId": "procedure:crm.customer_api.create_customer",
+      "kind": "invokes",
+      "targetNodeId": "function:crm.customer_api.validate_number",
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:validation-function-field",
+      "sourceNodeId": "function:crm.customer_api.validate_number",
+      "kind": "readsData",
+      "targetNodeId": "column:crm.customer.customer_number",
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:save-action-procedure",
+      "sourceNodeId": "action:save-customer",
+      "kind": "providedBy",
+      "targetNodeId": "procedure:crm.customer_api.create_customer",
+      "origin": "businessAnalysis",
+      "evidenceClassification": "consultantConfirmed"
+    },
+    {
+      "relationshipId": "rel:customer-table-trigger",
+      "sourceNodeId": "table:crm.customer",
+      "kind": "contains",
+      "targetNodeId": "trigger:crm.customer.trg_customer_audit",
+      "order": 3,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:customer-trigger-event",
+      "sourceNodeId": "trigger:crm.customer.trg_customer_audit",
+      "kind": "firesOn",
+      "targetNodeId": "table:crm.customer",
+      "origin": "databaseAnalysis",
+      "condition": "after insert or update"
+    },
+    {
+      "relationshipId": "rel:database-schedule",
+      "sourceNodeId": "database:crm",
+      "kind": "contains",
+      "targetNodeId": "schedule:crm.nightly",
+      "order": 3,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:database-job",
+      "sourceNodeId": "database:crm",
+      "kind": "contains",
+      "targetNodeId": "job:crm.customer-validation",
+      "order": 4,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:schedule-job",
+      "sourceNodeId": "schedule:crm.nightly",
+      "kind": "schedules",
+      "targetNodeId": "job:crm.customer-validation",
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:job-function",
+      "sourceNodeId": "job:crm.customer-validation",
+      "kind": "executes",
+      "targetNodeId": "function:crm.customer_api.validate_number",
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:semantic-source-member",
+      "sourceNodeId": "data-relationship:order-customer-number",
+      "kind": "hasSourceMember",
+      "targetNodeId": "column:crm.order_header.customer_number",
+      "order": 0,
+      "origin": "databaseAnalysis",
+      "evidenceClassification": "inferred",
+      "confidence": 0.88,
+      "inferenceMethod": "join and qualified-name analysis"
+    },
+    {
+      "relationshipId": "rel:semantic-target-member",
+      "sourceNodeId": "data-relationship:order-customer-number",
+      "kind": "hasTargetMember",
+      "targetNodeId": "column:crm.customer.customer_number",
+      "order": 0,
+      "origin": "databaseAnalysis",
+      "evidenceClassification": "inferred",
+      "confidence": 0.88,
+      "inferenceMethod": "join and qualified-name analysis"
+    },
+    {
+      "relationshipId": "rel:privacy-customer-number",
+      "sourceNodeId": "privacy:customer-number",
+      "kind": "classifies",
+      "targetNodeId": "data:customer-number",
+      "origin": "businessAnalysis",
+      "evidenceClassification": "consultantConfirmed"
+    },
+    {
+      "relationshipId": "rel:database-contact-table",
+      "sourceNodeId": "database:crm",
+      "kind": "contains",
+      "targetNodeId": "table:crm.customer_contact",
+      "order": 5,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:contact-table-column",
+      "sourceNodeId": "table:crm.customer_contact",
+      "kind": "contains",
+      "targetNodeId": "column:crm.customer_contact.customer_number",
+      "order": 0,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:contact-table-foreign-key",
+      "sourceNodeId": "table:crm.customer_contact",
+      "kind": "contains",
+      "targetNodeId": "key:crm.customer_contact.fk_contact_customer",
+      "order": 1,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:contact-foreign-key-column",
+      "sourceNodeId": "key:crm.customer_contact.fk_contact_customer",
+      "kind": "includes",
+      "targetNodeId": "column:crm.customer_contact.customer_number",
+      "order": 0,
+      "origin": "databaseAnalysis"
+    },
+    {
+      "relationshipId": "rel:contact-foreign-key-target",
+      "sourceNodeId": "key:crm.customer_contact.fk_contact_customer",
+      "kind": "referencesKey",
+      "targetNodeId": "key:crm.customer.pk_customer",
+      "origin": "databaseAnalysis",
+      "evidenceClassification": "observed"
+    }
+  ]
+}
