@@ -1,5 +1,27 @@
+# Gradle
 .gradle/
-.idea/
 build/
-out/
+
+# IntelliJ IDEA
+.idea/
 *.iml
+out/
+
+# Kotlin / Java build files
+*.class
+*.jar
+*.war
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Generated reports
+output/
+
+# Environment / secrets
+.env
+*.env
+application.properties
+application.yml
+application.yaml
