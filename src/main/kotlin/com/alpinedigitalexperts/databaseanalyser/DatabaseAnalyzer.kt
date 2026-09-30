@@ -1476,7 +1476,75 @@ class DatabaseAnalyzer(
 
 
     // ============================================================
-    // 35. DISCOVER INDEXES
+    // 35. DISCOVER COLUMNS
+    // ============================================================
+
+    fun discoverColumns(
+        schemaName: String,
+        tableName: String
+    ): List<DiscoveredColumn> {
+
+        return metadataAdapter
+            .discoverColumns(
+                schemaName = schemaName,
+                tableName = tableName
+            )
+    }
+
+
+    // ============================================================
+    // 36. DISCOVER PRIMARY KEYS
+    // ============================================================
+
+    fun discoverPrimaryKeys(
+        schemaName: String,
+        tableName: String
+    ): List<DiscoveredKey> {
+
+        return metadataAdapter
+            .discoverPrimaryKeys(
+                schemaName = schemaName,
+                tableName = tableName
+            )
+    }
+
+
+    // ============================================================
+    // 37. DISCOVER UNIQUE KEYS
+    // ============================================================
+
+    fun discoverUniqueKeys(
+        schemaName: String,
+        tableName: String
+    ): List<DiscoveredKey> {
+
+        return metadataAdapter
+            .discoverUniqueKeys(
+                schemaName = schemaName,
+                tableName = tableName
+            )
+    }
+
+
+    // ============================================================
+    // 38. DISCOVER FOREIGN KEYS
+    // ============================================================
+
+    fun discoverForeignKeys(
+        schemaName: String,
+        tableName: String
+    ): List<DiscoveredForeignKey> {
+
+        return metadataAdapter
+            .discoverForeignKeys(
+                schemaName = schemaName,
+                tableName = tableName
+            )
+    }
+
+
+    // ============================================================
+    // 39. DISCOVER INDEXES
     // ============================================================
 
     fun discoverIndexes(
@@ -1520,6 +1588,112 @@ class DatabaseAnalyzer(
             quoteIdentifier(tableName)
         }"
     }
+    // ============================================================
+    // 40. GET GROUPED NUMERIC AGGREGATES
+    // ============================================================
+
+    fun getGroupedNumericAggregates(
+        tableName: String,
+        groupByColumn: String,
+        numericColumn: String
+    ): List<GroupedNumericAggregate> {
+
+        return getGroupedNumericAggregates(
+            schemaName = "public",
+            tableName = tableName,
+            groupByColumn = groupByColumn,
+            numericColumn = numericColumn
+        )
+    }
+
+
+    fun getGroupedNumericAggregates(
+        schemaName: String,
+        tableName: String,
+        groupByColumn: String,
+        numericColumn: String
+    ): List<GroupedNumericAggregate> {
+
+        val groupColumn =
+            quoteIdentifier(
+                groupByColumn
+            )
+
+        val valueColumn =
+            quoteIdentifier(
+                numericColumn
+            )
+
+        val sql = """
+            SELECT
+                $groupColumn AS group_value,
+                COUNT(*) AS row_count,
+                MIN($valueColumn) AS minimum,
+                MAX($valueColumn) AS maximum,
+                AVG($valueColumn) AS average,
+                SUM($valueColumn) AS total
+            FROM ${qualifiedTable(schemaName, tableName)}
+            GROUP BY $groupColumn
+            ORDER BY $groupColumn
+        """.trimIndent()
+
+        val results =
+            mutableListOf<GroupedNumericAggregate>()
+
+        connection.prepareStatement(sql).use { statement ->
+
+            statement.executeQuery().use { resultSet ->
+
+                while (resultSet.next()) {
+
+                    results.add(
+                        GroupedNumericAggregate(
+                            groupValue =
+                                resultSet.getObject(
+                                    "group_value"
+                                )
+                                    ?.toString(),
+                            rowCount =
+                                resultSet.getLong(
+                                    "row_count"
+                                ),
+                            minimum =
+                                resultSet.getBigDecimal(
+                                    "minimum"
+                                ),
+                            maximum =
+                                resultSet.getBigDecimal(
+                                    "maximum"
+                                ),
+                            average =
+                                resultSet.getBigDecimal(
+                                    "average"
+                                ),
+                            total =
+                                resultSet.getBigDecimal(
+                                    "total"
+                                )
+                        )
+                    )
+                }
+            }
+        }
+
+        return results
+    }
+
+
+    // ============================================================
+    // 41. DISCOVER DATABASE DEPENDENCIES
+    // ============================================================
+
+    fun discoverDependencies(): List<DiscoveredDependency> {
+
+        return metadataAdapter
+            .discoverDependencies()
+    }
+
+
 }
 
 
@@ -1558,3 +1732,12 @@ data class DateStatistics(
     val latest: java.sql.Date?
 )
 
+
+data class GroupedNumericAggregate(
+    val groupValue: String?,
+    val rowCount: Long,
+    val minimum: BigDecimal?,
+    val maximum: BigDecimal?,
+    val average: BigDecimal?,
+    val total: BigDecimal?
+)

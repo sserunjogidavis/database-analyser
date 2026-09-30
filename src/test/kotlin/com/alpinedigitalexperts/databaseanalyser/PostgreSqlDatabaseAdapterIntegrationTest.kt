@@ -1356,4 +1356,422 @@ class PostgreSqlDatabaseAdapterIntegrationTest {
             )
         }
     }
+
+    // ============================================================
+    // DATABASE DEPENDENCIES
+    // ============================================================
+
+    @Test
+    fun discoversEmployeeDepartmentDependency() {
+
+        DatabaseConnector.connect().use { connection ->
+
+            val adapter =
+                PostgreSqlDatabaseAdapter(
+                    connection
+                )
+
+            val dependency =
+                adapter
+                    .discoverDependencies()
+                    .singleOrNull {
+                        it.dependencyKind ==
+                            DiscoveredDependencyKind.FOREIGN_KEY &&
+                            it.sourceSchemaName ==
+                            "public" &&
+                            it.sourceObjectName ==
+                            "employees" &&
+                            it.sourceSubObjectName ==
+                            "department_id" &&
+                            it.targetSchemaName ==
+                            "public" &&
+                            it.targetObjectName ==
+                            "departments" &&
+                            it.targetSubObjectName ==
+                            "department_id"
+                    }
+
+            assertNotNull(
+                dependency
+            )
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.TABLE,
+                dependency.sourceObjectKind
+            )
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.TABLE,
+                dependency.targetObjectKind
+            )
+
+            assertEquals(
+                DiscoveredDependencyKind.FOREIGN_KEY,
+                dependency.dependencyKind
+            )
+
+            assertEquals(
+                "companydb.public.employees.department_id",
+                dependency.sourceQualifiedName
+            )
+
+            assertEquals(
+                "companydb.public.departments.department_id",
+                dependency.targetQualifiedName
+            )
+
+            assertTrue(
+                !dependency.dependencyName.isNullOrBlank()
+            )
+        }
+    }
+
+    @Test
+    fun discoversOrdinaryViewDependency() {
+
+        withRollback {
+                connection,
+                adapter ->
+
+            connection.createStatement().use { statement ->
+                statement.execute(
+                    """
+                    CREATE VIEW employee_salary_dependency_view AS
+                    SELECT employee_id, first_name, salary
+                    FROM employees
+                    """.trimIndent()
+                )
+            }
+
+            val dependency =
+                adapter.discoverDependencies().singleOrNull {
+                    it.dependencyKind ==
+                        DiscoveredDependencyKind.VIEW_REFERENCE &&
+                        it.sourceSchemaName == "public" &&
+                        it.sourceObjectName ==
+                        "employee_salary_dependency_view" &&
+                        it.targetSchemaName == "public" &&
+                        it.targetObjectName == "employees"
+                }
+
+            assertNotNull(dependency)
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.VIEW,
+                dependency.sourceObjectKind
+            )
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.TABLE,
+                dependency.targetObjectKind
+            )
+
+            assertEquals(
+                "companydb.public.employee_salary_dependency_view",
+                dependency.sourceQualifiedName
+            )
+
+            assertEquals(
+                "companydb.public.employees",
+                dependency.targetQualifiedName
+            )
+        }
+    }
+
+
+    @Test
+    fun discoversMaterializedViewDependency() {
+
+        withRollback {
+                connection,
+                adapter ->
+
+            connection.createStatement().use { statement ->
+                statement.execute(
+                    """
+                    CREATE MATERIALIZED VIEW department_employee_dependency_mv AS
+                    SELECT
+                        department_id,
+                        COUNT(*) AS employee_count
+                    FROM employees
+                    GROUP BY department_id
+                    """.trimIndent()
+                )
+            }
+
+            val dependency =
+                adapter.discoverDependencies().singleOrNull {
+                    it.dependencyKind ==
+                        DiscoveredDependencyKind.MATERIALIZED_VIEW_REFERENCE &&
+                        it.sourceSchemaName == "public" &&
+                        it.sourceObjectName ==
+                        "department_employee_dependency_mv" &&
+                        it.targetSchemaName == "public" &&
+                        it.targetObjectName == "employees"
+                }
+
+            assertNotNull(dependency)
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.MATERIALIZED_VIEW,
+                dependency.sourceObjectKind
+            )
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.TABLE,
+                dependency.targetObjectKind
+            )
+
+            assertEquals(
+                "companydb.public.department_employee_dependency_mv",
+                dependency.sourceQualifiedName
+            )
+
+            assertEquals(
+                "companydb.public.employees",
+                dependency.targetQualifiedName
+            )
+        }
+    }
+
+    @Test
+    fun discoversSequenceDependency() {
+
+        withRollback {
+                connection,
+                adapter ->
+
+            connection.createStatement().use { statement ->
+
+                statement.execute(
+                    """
+                    CREATE SEQUENCE dependency_sequence_test
+                    START WITH 1
+                    INCREMENT BY 1
+                    """.trimIndent()
+                )
+
+                statement.execute(
+                    """
+                    CREATE TABLE sequence_dependency_table_test (
+                        id BIGINT NOT NULL
+                            DEFAULT nextval(
+                                'dependency_sequence_test'::regclass
+                            ),
+                        description TEXT
+                    )
+                    """.trimIndent()
+                )
+            }
+
+            val dependency =
+                adapter
+                    .discoverDependencies()
+                    .singleOrNull {
+                        it.dependencyKind ==
+                            DiscoveredDependencyKind.SEQUENCE_REFERENCE &&
+                            it.sourceSchemaName ==
+                            "public" &&
+                            it.sourceObjectName ==
+                            "sequence_dependency_table_test" &&
+                            it.sourceSubObjectName ==
+                            "id" &&
+                            it.targetSchemaName ==
+                            "public" &&
+                            it.targetObjectName ==
+                            "dependency_sequence_test"
+                    }
+
+            assertNotNull(
+                dependency
+            )
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.TABLE,
+                dependency.sourceObjectKind
+            )
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.SEQUENCE,
+                dependency.targetObjectKind
+            )
+
+            assertEquals(
+                DiscoveredDependencyKind.SEQUENCE_REFERENCE,
+                dependency.dependencyKind
+            )
+
+            assertEquals(
+                "companydb.public.sequence_dependency_table_test.id",
+                dependency.sourceQualifiedName
+            )
+
+            assertEquals(
+                "companydb.public.dependency_sequence_test",
+                dependency.targetQualifiedName
+            )
+
+            assertNull(
+                dependency.targetSubObjectName
+            )
+        }
+    }
+
+    @Test
+    fun discoversFunctionTableDependency() {
+
+        withRollback {
+                connection,
+                adapter ->
+
+            connection.createStatement().use { statement ->
+
+                statement.execute(
+                    """
+                    CREATE TABLE routine_function_dependency_table_test (
+                        id INTEGER PRIMARY KEY,
+                        amount INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+
+                statement.execute(
+                    """
+                    CREATE FUNCTION routine_dependency_function_test()
+                    RETURNS INTEGER
+                    LANGUAGE SQL
+                    BEGIN ATOMIC
+                        SELECT COALESCE(SUM(amount), 0)::INTEGER
+                        FROM routine_function_dependency_table_test;
+                    END
+                    """.trimIndent()
+                )
+            }
+
+            val dependency =
+                adapter
+                    .discoverDependencies()
+                    .singleOrNull {
+                        it.dependencyKind ==
+                            DiscoveredDependencyKind.ROUTINE_REFERENCE &&
+                            it.sourceSchemaName ==
+                            "public" &&
+                            it.sourceObjectName ==
+                            "routine_dependency_function_test" &&
+                            it.targetSchemaName ==
+                            "public" &&
+                            it.targetObjectName ==
+                            "routine_function_dependency_table_test"
+                    }
+
+            assertNotNull(
+                dependency
+            )
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.FUNCTION,
+                dependency.sourceObjectKind
+            )
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.TABLE,
+                dependency.targetObjectKind
+            )
+
+            assertEquals(
+                DiscoveredDependencyKind.ROUTINE_REFERENCE,
+                dependency.dependencyKind
+            )
+
+            assertEquals(
+                "companydb.public.routine_dependency_function_test",
+                dependency.sourceQualifiedName
+            )
+
+            assertEquals(
+                "companydb.public.routine_function_dependency_table_test",
+                dependency.targetQualifiedName
+            )
+        }
+    }
+
+
+    @Test
+    fun discoversStoredProcedureTableDependency() {
+
+        withRollback {
+                connection,
+                adapter ->
+
+            connection.createStatement().use { statement ->
+
+                statement.execute(
+                    """
+                    CREATE TABLE routine_procedure_dependency_table_test (
+                        id INTEGER PRIMARY KEY,
+                        processed BOOLEAN NOT NULL DEFAULT FALSE
+                    )
+                    """.trimIndent()
+                )
+
+                statement.execute(
+                    """
+                    CREATE PROCEDURE routine_dependency_procedure_test()
+                    LANGUAGE SQL
+                    BEGIN ATOMIC
+                        UPDATE routine_procedure_dependency_table_test
+                        SET processed = TRUE;
+                    END
+                    """.trimIndent()
+                )
+            }
+
+            val dependency =
+                adapter
+                    .discoverDependencies()
+                    .singleOrNull {
+                        it.dependencyKind ==
+                            DiscoveredDependencyKind.ROUTINE_REFERENCE &&
+                            it.sourceSchemaName ==
+                            "public" &&
+                            it.sourceObjectName ==
+                            "routine_dependency_procedure_test" &&
+                            it.targetSchemaName ==
+                            "public" &&
+                            it.targetObjectName ==
+                            "routine_procedure_dependency_table_test"
+                    }
+
+            assertNotNull(
+                dependency
+            )
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.STORED_PROCEDURE,
+                dependency.sourceObjectKind
+            )
+
+            assertEquals(
+                DiscoveredDependencyObjectKind.TABLE,
+                dependency.targetObjectKind
+            )
+
+            assertEquals(
+                DiscoveredDependencyKind.ROUTINE_REFERENCE,
+                dependency.dependencyKind
+            )
+
+            assertEquals(
+                "companydb.public.routine_dependency_procedure_test",
+                dependency.sourceQualifiedName
+            )
+
+            assertEquals(
+                "companydb.public.routine_procedure_dependency_table_test",
+                dependency.targetQualifiedName
+            )
+        }
+    }
+
+
 }

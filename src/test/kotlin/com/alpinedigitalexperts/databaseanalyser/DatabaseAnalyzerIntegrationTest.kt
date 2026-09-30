@@ -424,4 +424,106 @@ class DatabaseAnalyzerIntegrationTest {
                 )
             }
     }
+
+    // ============================================================
+    // 9. GROUPED NUMERIC AGGREGATE TEST
+    // ============================================================
+
+    @Test
+    fun groupsMonthlySalesByRegion() {
+
+        DatabaseConnector
+            .connect()
+            .use { connection ->
+
+                val analyzer =
+                    DatabaseAnalyzer(
+                        connection
+                    )
+
+                val aggregates =
+                    analyzer
+                        .getGroupedNumericAggregates(
+                            schemaName = "reporting",
+                            tableName = "monthly_sales",
+                            groupByColumn = "region",
+                            numericColumn = "total_amount"
+                        )
+
+                assertEquals(
+                    3,
+                    aggregates.size
+                )
+
+                val central =
+                    aggregates.single {
+                        it.groupValue == "Central"
+                    }
+
+                assertEquals(
+                    1L,
+                    central.rowCount
+                )
+
+                assertEquals(
+                    "1500000.00",
+                    central.minimum
+                        ?.toPlainString()
+                )
+
+                assertEquals(
+                    "1500000.00",
+                    central.maximum
+                        ?.toPlainString()
+                )
+
+                assertEquals(
+                    "1500000.000000000000",
+                    central.average
+                        ?.toPlainString()
+                )
+
+                assertEquals(
+                    "1500000.00",
+                    central.total
+                        ?.toPlainString()
+                )
+
+
+                val eastern =
+                    aggregates.single {
+                        it.groupValue == "Eastern"
+                    }
+
+                assertEquals(
+                    1L,
+                    eastern.rowCount
+                )
+
+                assertEquals(
+                    "2100000.00",
+                    eastern.total
+                        ?.toPlainString()
+                )
+
+
+                val western =
+                    aggregates.single {
+                        it.groupValue == "Western"
+                    }
+
+                assertEquals(
+                    1L,
+                    western.rowCount
+                )
+
+                assertEquals(
+                    "1800000.00",
+                    western.total
+                        ?.toPlainString()
+                )
+            }
+    }
+
+
 }

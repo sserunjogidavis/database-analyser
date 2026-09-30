@@ -170,6 +170,71 @@ class DatabaseQualityReportCsvExporter {
 
 
         // ============================================================
+        // GROUPED AGGREGATE ANALYSIS
+        // ============================================================
+
+        val hasGroupedAggregates =
+            report.tables.any {
+                it.groupedAggregates.isNotEmpty()
+            }
+
+        if (hasGroupedAggregates) {
+
+            builder.appendLine()
+
+            appendRow(
+                builder,
+                listOf(
+                    "GROUPED AGGREGATE ANALYSIS"
+                )
+            )
+
+            appendRow(
+                builder,
+                listOf(
+                    "Database",
+                    "Schema",
+                    "Table",
+                    "Group By Column",
+                    "Numeric Column",
+                    "Group Value",
+                    "Row Count",
+                    "Minimum",
+                    "Maximum",
+                    "Average",
+                    "Total"
+                )
+            )
+
+            for (table in report.tables) {
+
+                for (aggregate in table.groupedAggregates) {
+
+                    for (group in aggregate.groups) {
+
+                        appendRow(
+                            builder,
+                            listOf(
+                                table.databaseName,
+                                table.schemaName,
+                                table.tableName,
+                                aggregate.groupByColumn,
+                                aggregate.numericColumn,
+                                group.groupValue ?: "",
+                                group.rowCount.toString(),
+                                group.minimum ?: "",
+                                group.maximum ?: "",
+                                group.average ?: "",
+                                group.total ?: ""
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+
+        // ============================================================
         // BLANK LINE BEFORE SUMMARY
         // ============================================================
 

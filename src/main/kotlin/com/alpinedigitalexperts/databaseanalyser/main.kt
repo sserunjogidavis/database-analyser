@@ -27,6 +27,34 @@ fun main() {
 
 
         // ========================================================
+        // APPLICATION CATALOG
+        // ========================================================
+
+        val catalogBuilder =
+            DatabaseCatalogBuilder(
+                analyzer
+            )
+
+        val applicationCatalog =
+            catalogBuilder.buildCatalog()
+
+        val catalogExporter =
+            ApplicationCatalogJsonExporter()
+
+        val catalogOutputPath =
+            Path.of(
+                "output",
+                "application-catalog.json"
+            )
+
+        val writtenCatalogPath =
+            catalogExporter.writeToFile(
+                catalog = applicationCatalog,
+                outputPath = catalogOutputPath
+            )
+
+
+        // ========================================================
         // JSON EXPORT
         // ========================================================
 
@@ -303,7 +331,7 @@ fun main() {
 
 
             // ====================================================
-            // NULL AND AGGREGATE COUNT ANALYSIS
+            // NULL AND COUNT ANALYSIS
             // ====================================================
 
             println("------------------------------------------------------------")
@@ -1007,6 +1035,14 @@ fun main() {
         println(
             "CSV report: ${
                 writtenCsvPath
+                    .toAbsolutePath()
+                    .normalize()
+            }"
+        )
+
+        println(
+            "Application Catalog: ${
+                writtenCatalogPath
                     .toAbsolutePath()
                     .normalize()
             }"

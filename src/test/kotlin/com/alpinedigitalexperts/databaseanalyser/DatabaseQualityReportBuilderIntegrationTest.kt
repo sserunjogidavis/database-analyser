@@ -226,6 +226,78 @@ class DatabaseQualityReportBuilderIntegrationTest {
                 null,
                 saleId.leadingTrailingWhitespaceCount
             )
+
+            // ====================================================
+            // GROUPED AGGREGATE ANALYSIS
+            // ====================================================
+
+            assertEquals(
+                1,
+                report.groupedAggregates.size
+            )
+
+            val aggregate =
+                report.groupedAggregates.single()
+
+            assertEquals(
+                "region",
+                aggregate.groupByColumn
+            )
+
+            assertEquals(
+                "total_amount",
+                aggregate.numericColumn
+            )
+
+            assertEquals(
+                3,
+                aggregate.groups.size
+            )
+
+            val central =
+                aggregate.groups.single {
+                    it.groupValue == "Central"
+                }
+
+            assertEquals(
+                1L,
+                central.rowCount
+            )
+
+            assertEquals(
+                "1500000.00",
+                central.total
+            )
+
+            val eastern =
+                aggregate.groups.single {
+                    it.groupValue == "Eastern"
+                }
+
+            assertEquals(
+                1L,
+                eastern.rowCount
+            )
+
+            assertEquals(
+                "2100000.00",
+                eastern.total
+            )
+
+            val western =
+                aggregate.groups.single {
+                    it.groupValue == "Western"
+                }
+
+            assertEquals(
+                1L,
+                western.rowCount
+            )
+
+            assertEquals(
+                "1800000.00",
+                western.total
+            )
         }
     }
 
@@ -639,5 +711,158 @@ class DatabaseQualityReportBuilderIntegrationTest {
         }
     }
 
-}
 
+    @Test
+    fun `automatically discovers grouped aggregate analysis for a generic table`() {
+
+        DatabaseConnector.connect().use { connection ->
+
+            connection.autoCommit =
+                false
+
+            try {
+
+                connection.prepareStatement(
+                    """
+                    CREATE TABLE public.aggregate_analysis_test (
+                        test_id INTEGER PRIMARY KEY,
+                        category VARCHAR(100) NOT NULL,
+                        amount NUMERIC(12, 2) NOT NULL
+                    )
+                    """.trimIndent()
+                ).use { statement ->
+
+                    statement.executeUpdate()
+                }
+
+                connection.prepareStatement(
+                    """
+                    INSERT INTO public.aggregate_analysis_test (
+                        test_id,
+                        category,
+                        amount
+                    )
+                    VALUES
+                        (1, 'Food', 100.00),
+                        (2, 'Food', 200.00),
+                        (3, 'Books', 50.00)
+                    """.trimIndent()
+                ).use { statement ->
+
+                    statement.executeUpdate()
+                }
+
+                val analyzer =
+                    DatabaseAnalyzer(
+                        connection
+                    )
+
+                val builder =
+                    DatabaseQualityReportBuilder(
+                        analyzer
+                    )
+
+                val report =
+                    builder.buildTableReport(
+                        schemaName = "public",
+                        tableName = "aggregate_analysis_test"
+                    )
+
+                assertEquals(
+                    1,
+                    report.groupedAggregates.size
+                )
+
+                val aggregate =
+                    report.groupedAggregates.single()
+
+                assertEquals(
+                    "category",
+                    aggregate.groupByColumn
+                )
+
+                assertEquals(
+                    "amount",
+                    aggregate.numericColumn
+                )
+
+                assertEquals(
+                    2,
+                    aggregate.groups.size
+                )
+
+                val food =
+                    aggregate.groups.single {
+                        it.groupValue == "Food"
+                    }
+
+                assertEquals(
+                    2L,
+                    food.rowCount
+                )
+
+                assertEquals(
+                    "100.00",
+                    food.minimum
+                )
+
+                assertEquals(
+                    "200.00",
+                    food.maximum
+                )
+
+                assertEquals(
+                    "300.00",
+                    food.total
+                )
+
+                assertTrue(
+                    food.average
+                        ?.toBigDecimal()
+                        ?.compareTo(
+                            "150.00".toBigDecimal()
+                        ) == 0
+                )
+
+                val books =
+                    aggregate.groups.single {
+                        it.groupValue == "Books"
+                    }
+
+                assertEquals(
+                    1L,
+                    books.rowCount
+                )
+
+                assertEquals(
+                    "50.00",
+                    books.minimum
+                )
+
+                assertEquals(
+                    "50.00",
+                    books.maximum
+                )
+
+                assertEquals(
+                    "50.00",
+                    books.total
+                )
+
+                assertTrue(
+                    books.average
+                        ?.toBigDecimal()
+                        ?.compareTo(
+                            "50.00".toBigDecimal()
+                        ) == 0
+                )
+
+            } finally {
+
+                connection.rollback()
+            }
+        }
+    }
+
+
+}

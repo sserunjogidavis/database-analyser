@@ -1,68 +1,78 @@
 # Database Analyser
 
-The Database Analyser discovers database structures, executable database objects,
-dependencies, semantic relationship candidates, and attributable privacy classifications.
-It exports those findings as an Application Catalog graph for the Legacy Modernization
-Workbench.
+The **Database Analyser** is a Kotlin/JDK 21 application for analysing PostgreSQL databases. It discovers database structure and dependencies, performs data-quality and aggregate analysis, produces quality reports, and exports database metadata as an **Application Catalog graph** for the Legacy Modernization Workbench.
 
-The repository intentionally starts with contract governance before analyzer implementation.
-The Workbench is the only semantic authority for the Application Catalog. This repository
-pins an immutable snapshot of that contract and must not introduce an independent model.
+The Workbench is the semantic authority for the Application Catalog. This repository pins an immutable snapshot of that contract and verifies changes against it.
+
+## Current implementation status
+
+The PostgreSQL implementation is functional and tested. It currently provides:
+
+- schema-aware discovery of databases, schemas, tables, columns, views, materialized views, keys, indexes, sequences, functions, and stored procedures;
+- primary-key, unique-key, and foreign-key discovery and validation;
+- database dependency discovery;
+- NULL/non-NULL, distinct-value, duplicate-record, text, email, numeric, date, constant-value, and high-NULL analysis;
+- grouped and column-level numeric aggregate analysis;
+- potential numeric-outlier detection;
+- structured database-quality reporting;
+- JSON, HTML, and CSV quality-report export;
+- Workbench-compatible Application Catalog export;
+- contract-aligned dependency semantics;
+- schema validation and automated integration testing; and
+- automatic verification of the pinned Workbench contract during the Gradle `check` lifecycle.
+
+Detailed chronological documentation is available in [`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md).
+
+## Technology stack
+
+| Technology | Purpose |
+|---|---|
+| Kotlin | Main implementation language |
+| JDK 21 | Java runtime baseline |
+| Gradle Kotlin DSL | Build and dependency management |
+| PostgreSQL | Current supported database engine |
+| JDBC | Database connectivity |
+| Docker | Local PostgreSQL development environment |
+| Kotlin Serialization | JSON serialization |
+| Kotlin Test / JUnit | Automated testing |
+| NetworkNT JSON Schema Validator | Application Catalog schema validation |
+| Git / GitHub | Version control and repository hosting |
 
 ## Pinned Application Catalog contract
 
-The current snapshot is pinned to Workbench commit
-`732de4ddf73969b31d1791bf454b0d924459b9f2`.
+The Application Catalog contract is pinned to Workbench commit:
 
-Start with:
+```text
+732de4ddf73969b31d1791bf454b0d924459b9f2
+```
 
-- [`contracts/workbench-catalog/README.md`](contracts/workbench-catalog/README.md);
-- [`contracts/workbench-catalog/contract-lock.json`](contracts/workbench-catalog/contract-lock.json);
-- [`contracts/workbench-catalog/snapshot/contracts/catalog/v1/application-catalog-model.md`](contracts/workbench-catalog/snapshot/contracts/catalog/v1/application-catalog-model.md);
-- [`contracts/workbench-catalog/snapshot/contracts/catalog/v1/application-model-projection.md`](contracts/workbench-catalog/snapshot/contracts/catalog/v1/application-model-projection.md); and
-- [`AGENTS.md`](AGENTS.md) before making model-affecting changes.
+Important contract files include:
 
-Verify the checked-in snapshot on Windows:
+- [`contracts/workbench-catalog/README.md`](contracts/workbench-catalog/README.md)
+- [`contracts/workbench-catalog/contract-lock.json`](contracts/workbench-catalog/contract-lock.json)
+- [`contracts/workbench-catalog/snapshot/contracts/catalog/v1/application-catalog-model.md`](contracts/workbench-catalog/snapshot/contracts/catalog/v1/application-catalog-model.md)
+- [`contracts/workbench-catalog/snapshot/contracts/catalog/v1/application-model-projection.md`](contracts/workbench-catalog/snapshot/contracts/catalog/v1/application-model-projection.md)
+- [`AGENTS.md`](AGENTS.md)
+
+The analyser must not independently introduce catalog semantics that conflict with the pinned Workbench contract.
+
+The contract snapshot can be verified directly on Windows:
 
 ```powershell
 .\scripts\verify-workbench-contract.ps1
 ```
 
-Or run the repository build gate:
+It is also verified automatically by the repository build gate:
 
 ```powershell
 .\gradlew.bat check
 ```
 
-## Planned implementation
+A successful verification reports the pinned Workbench commit and verifies the checked-in contract files.
 
-Kotlin on JDK 21 is the implementation baseline. Initial analyzer work should proceed in
-small adapters, beginning with a containerized test database and deterministic metadata
-discovery. Every exported catalog document must be validated against the pinned schema and
-the shared positive and negative fixtures before a database adapter is considered complete.
+## PostgreSQL connectivity
 
-The first implementation must cover at least:
-
-- databases, schemas, tables, views, materialized views, columns, keys, indexes, and
-  constraints;
-- stored procedures, functions, packages or modules, triggers, jobs, schedules, tasks,
-  sequences, synonyms, and queues where supported by the database;
-- proven read, write, create, delete, call, trigger, scheduling, and derivation dependencies;
-- declared foreign keys separately from inferred semantic relationship candidates;
-- stable identities across unchanged repeated analyses; and
-- PII status with provenance, confidence, and `unknown` as the safe default.
-
-
-
-- ## Current implementation status
-
-The PostgreSQL analyzer implementation is now functional and includes metadata discovery, data-quality analysis, aggregate analysis, reporting, and automated tests.
-
-### PostgreSQL connectivity
-
-The analyzer connects to PostgreSQL through JDBC.
-
-Database configuration is supplied through environment variables rather than hardcoded credentials. The current configuration includes values such as:
+Database configuration is supplied through environment variables rather than hardcoded credentials:
 
 ```text
 DB_HOST
@@ -72,30 +82,31 @@ DB_USER
 DB_PASSWORD
 ```
 
-The database password is read from the `DB_PASSWORD` environment variable.
+The database password is read from `DB_PASSWORD` and must not be committed to the repository.
 
-During development, PostgreSQL is run in Docker and the analyzer is tested against the `companydb` database.
+During development, PostgreSQL 16 is run in Docker and the analyser is tested against the `companydb` database.
 
-### Metadata discovery
+## Metadata discovery
 
-The analyzer currently discovers PostgreSQL metadata including:
+The PostgreSQL metadata adapter discovers supported database objects including:
 
-- schemas;
-- tables;
-- columns;
-- primary keys;
-- unique keys;
-- foreign keys;
-- indexes;
-- views;
-- materialized views;
-- sequences;
-- functions; and
-- stored procedures.
+```text
+Database
+Schema
+Table
+Column
+Primary Key
+Unique Key
+Foreign Key
+Index
+View
+Materialized View
+Sequence
+Function
+Stored Procedure
+```
 
-The implementation supports non-public schemas.
-
-The current development database includes tables such as:
+The implementation is schema-aware. The development database demonstrates this with:
 
 ```text
 public.departments
@@ -103,126 +114,90 @@ public.employees
 reporting.monthly_sales
 ```
 
-### Table and column analysis
-
-For each table, the analyzer records:
-
-- database name;
-- schema name;
-- table name;
-- qualified table name;
-- column name;
-- data type;
-- nullable status;
-- default value; and
-- row count.
-
-### Primary-key analysis
-
-The analyzer discovers primary keys and verifies whether each table has a primary key.
-
-Tables without a primary key are included in the database quality summary.
-
-### Unique-key analysis
-
-Single-column unique constraints are detected and used when evaluating duplicate values.
-
-### Foreign-key analysis
-
-Foreign-key relationships are discovered automatically.
-
-For each relationship, the analyzer records:
-
-- source column;
-- referenced schema;
-- referenced table;
-- referenced column; and
-- invalid reference count.
-
-Example:
+The metadata architecture is separated into:
 
 ```text
-department_id -> public.departments.department_id
+DatabaseMetadataAdapter.kt
+PostgreSqlDatabaseAdapter.kt
+DatabaseAnalyzer.kt
 ```
 
-Foreign-key values are validated by comparing child values with the referenced parent values.
+`DatabaseMetadataAdapter` defines the metadata abstraction, `PostgreSqlDatabaseAdapter` contains PostgreSQL-specific discovery, and `DatabaseAnalyzer` provides the higher-level analysis operations.
 
-### NULL and non-NULL analysis
+## Database dependency discovery
 
-For every column, the analyzer calculates:
+The analyser discovers dependencies between supported PostgreSQL database objects.
 
-- row count;
-- non-NULL count;
-- NULL count; and
-- NULL percentage.
+Application Catalog relationships use contract-aligned semantics. In particular:
 
-Conceptually, this includes:
+- ordinary views use `derivedFrom`;
+- materialized views use `derivedFrom`;
+- routines use `usesData` when a database dependency is proven but the precise read/write access mode cannot be established;
+- sequence dependencies use `dependsOn`;
+- declared foreign keys are represented as physical foreign-key objects rather than as redundant generic dependency edges.
 
-```sql
-COUNT(*)
-COUNT(column)
-```
+Routine dependency discovery retains PostgreSQL identity arguments so overloaded functions and procedures can be resolved to the correct catalog node.
 
-Example:
+## Foreign-key representation
+
+Declared foreign keys are exported as physical Application Catalog objects.
+
+The foreign-key node:
+
+1. is structurally contained by its owning table;
+2. uses ordered `includes` relationships for its source columns; and
+3. uses `referencesKey` to point to the referenced primary or unique key.
+
+For example, the development database contains:
 
 ```text
-salary:
-    Row Count: 3
-    Non-NULL Count: 3
-    NULL Count: 0
-    NULL Percentage: 0.00%
+public.employees.department_id
+    ->
+public.departments.department_id
 ```
 
-### Distinct-value analysis
+The analyser also validates foreign-key data and reports invalid references as data-quality findings.
 
-The analyzer calculates the number of distinct values in each column.
+## Data-quality analysis
 
-Conceptually:
+The analyser performs multiple quality checks.
 
-```sql
-COUNT(DISTINCT column)
+### NULL analysis
+
+For each column it calculates:
+
+```text
+Row Count
+Non-NULL Count
+NULL Count
+NULL Percentage
 ```
 
-This is used to identify:
+### Distinct and duplicate analysis
 
-- fully unique columns;
-- repeated values; and
-- constant-value columns.
-
-### Duplicate analysis
-
-Duplicate analysis distinguishes between:
+The analyser calculates distinct-value counts and distinguishes between repetition in:
 
 - primary-key columns;
 - unique columns;
 - foreign-key columns; and
-- normal columns.
+- ordinary columns.
 
-Repeated foreign-key values are allowed, while duplicates in primary-key or unique columns are treated as quality problems.
+It also checks for potential duplicate business records.
 
-### Potential duplicate-record detection
+### Text analysis
 
-The analyzer can detect potential duplicate records by comparing non-key business columns.
-
-This helps identify records that may represent the same logical business entity.
-
-### Text-quality analysis
-
-Text columns are checked for:
+Text columns can be checked for:
 
 - empty strings;
-- whitespace-only values; and
-- leading or trailing whitespace.
+- whitespace-only values;
+- leading/trailing whitespace; and
+- inconsistent text conditions supported by the analyser.
 
-### Email-format analysis
+Email-related columns are also checked for invalid email formats.
 
-Columns whose names indicate that they contain email addresses are checked for invalid email formats.
+### Numeric analysis
 
-### Numeric aggregate analysis
-
-Numeric business columns are analysed using PostgreSQL aggregate functions.
-
-The analyzer currently calculates:
+Appropriate numeric business columns are analysed using:
 
 ```text
 COUNT(column)
@@ -233,60 +208,62 @@ AVG(column)
 SUM(column)
 ```
 
-These are reported as:
+Identifier columns are excluded from business numeric statistics where appropriate.
 
-- Non-NULL Count;
-- Distinct Count;
-- Minimum;
-- Maximum;
-- Average; and
-- Total.
-
-Identifier columns are excluded from business numeric analysis.
-
-### Numeric anomaly analysis
-
-Numeric business columns are checked for:
-
-- negative values; and
-- potential statistical outliers.
-
-Potential outliers are detected using a median-based method.
+Numeric quality analysis also includes negative-value detection and median-based potential-outlier detection.
 
 ### Date analysis
 
-Date and timestamp columns are analysed for:
+Date and timestamp columns can be analysed for:
 
-- earliest value;
-- latest value; and
-- future-date values.
+```text
+Earliest Value
+Latest Value
+Future-Date Values
+```
 
-### Database quality report
+### Constant values and high NULL percentages
 
-All analysis results are combined into a structured database quality report.
+The analyser identifies columns that contain only one distinct non-NULL value and tracks high NULL-percentage conditions in the quality summary.
 
-The summary includes:
+## Aggregate analysis
 
-- tables analysed;
-- columns analysed;
-- rows analysed;
-- primary-key issues;
-- foreign-key issues;
-- duplicate-value issues;
-- potential duplicate-record issues;
-- empty-string issues;
-- whitespace-only issues;
-- leading/trailing whitespace issues;
-- email-format issues;
-- numeric-anomaly issues;
-- potential numeric-outlier issues;
-- date-anomaly issues;
-- constant-value issues;
-- high-NULL-percentage issues;
-- total issues; and
-- overall status.
+The analyser supports generic grouped numeric aggregate analysis.
 
-The current overall status values are:
+Instead of hardcoding a particular table such as `reporting.monthly_sales`, the report builder identifies suitable grouping columns and numeric business columns.
+
+This allows aggregate analysis to work with different database structures while avoiding identifier columns as business measurements.
+
+Aggregate information is included in the structured report and supported by the JSON, HTML, and CSV reporting pipeline.
+
+## Database quality report
+
+Analysis results are assembled by `DatabaseQualityReportBuilder.kt` into a structured report.
+
+The summary includes metrics such as:
+
+```text
+Tables Analysed
+Columns Analysed
+Rows Analysed
+Primary Key Issues
+Foreign Key Issues
+Duplicate Value Issues
+Potential Duplicate Record Issues
+Empty String Issues
+Whitespace-Only Issues
+Leading/Trailing Whitespace Issues
+Email Format Issues
+Numeric Anomaly Issues
+Potential Numeric Outlier Issues
+Date Anomaly Issues
+Constant Value Issues
+High NULL Percentage Issues
+Total Issues
+Overall Status
+```
+
+Current overall status values include:
 
 ```text
 GOOD
@@ -294,9 +271,9 @@ REVIEW
 ATTENTION REQUIRED
 ```
 
-### Report export
+## Report export
 
-The analyzer exports reports in three formats:
+The application generates database-quality reports in three formats:
 
 ```text
 output/database-quality-report.json
@@ -304,50 +281,84 @@ output/database-quality-report.html
 output/database-quality-report.csv
 ```
 
-The JSON report provides structured machine-readable output.
+The JSON output is machine-readable, the HTML report is browser-friendly, and the CSV report supports spreadsheet/data-processing workflows.
 
-The HTML report provides a browser-friendly view of the analysis.
+Generated output is kept under `output/` and should not be committed.
 
-The CSV report provides column-level analysis that can be opened in spreadsheet software.
+## Application Catalog export
 
-Generated reports are stored under `output/` and should not be committed.
+The application also generates:
 
-### Automated testing
+```text
+output/application-catalog.json
+```
 
-The project includes unit and integration tests covering areas such as:
+The catalog represents discovered database metadata as Workbench Application Catalog nodes and relationships.
+
+The current implementation exports physical database objects with `databaseAnalysis` origin and observed evidence where the information was directly discovered from PostgreSQL.
+
+Examples of exported relationships include:
+
+```text
+contains
+includes
+indexes
+referencesKey
+dependsOn
+derivedFrom
+usesData
+```
+
+Catalog construction is handled primarily by:
+
+```text
+ApplicationCatalog.kt
+DatabaseCatalogBuilder.kt
+ApplicationCatalogJsonExporter.kt
+```
+
+## Application Catalog validation
+
+The exported catalog is tested against the pinned Workbench JSON Schema.
+
+The project also contains integration tests for catalog construction and PostgreSQL dependency discovery, including views, materialized views, sequences, functions, stored procedures, declared foreign keys, and overloaded routine resolution.
+
+Model-affecting changes must continue to follow the pinned contract rather than creating analyser-specific catalog semantics.
+
+## Automated testing
+
+The project contains unit and integration tests covering:
 
 - analyzer behaviour;
 - metadata-adapter behaviour;
-- PostgreSQL integration;
-- non-public-schema discovery;
-- database-quality report generation;
-- JSON export;
-- HTML export; and
-- CSV export.
+- PostgreSQL metadata discovery;
+- non-public schemas;
+- quality-report construction;
+- aggregate analysis;
+- JSON, HTML, and CSV exporters;
+- Application Catalog construction;
+- Application Catalog schema validation;
+- database dependency discovery;
+- overloaded routine dependency resolution; and
+- Workbench contract verification.
 
-The full test suite can be run on Windows with:
+Run the tests on Windows with:
 
 ```powershell
 .\gradlew.bat test
 ```
 
-A successful run ends with:
+Run the complete verification gate with:
 
-```text
-BUILD SUCCESSFUL
+```powershell
+.\gradlew.bat check
 ```
 
-### Latest verified development run
+The latest completed verification passed successfully and verified the pinned Workbench Application Catalog contract.
 
-The latest verified analyzer run successfully analysed:
+## Latest development database result
 
-```text
-Tables analysed: 3
-Columns analysed: 14
-Rows analysed: 9
-```
-
-The analyzed tables were:
+The development database currently contains three analysed tables:
 
 ```text
 public.departments
@@ -355,50 +366,61 @@ public.employees
 reporting.monthly_sales
 ```
 
-The run produced:
+A verified quality-analysis run analysed:
+
+```text
+Tables analysed: 3
+Columns analysed: 14
+Rows analysed: 9
+```
+
+The remaining quality finding in that development dataset was a constant-value condition, producing:
 
 ```text
 Total Issues: 1
 Overall Status: REVIEW
 ```
 
-The single issue was a constant-value condition in the development test data.
+This is a finding in the test/development data rather than a build failure.
 
-The analyzer successfully generated JSON, HTML, and CSV reports and completed with:
-
-```text
-BUILD SUCCESSFUL
-```
-
-## Running the analyzer
+## Running the analyser
 
 Before running the application:
 
 1. Start PostgreSQL.
-2. Configure the required database environment variables.
+2. Configure the database environment variables.
 3. Ensure `DB_PASSWORD` is set.
-4. Run the analyzer through IntelliJ or Gradle.
+4. Run the application through IntelliJ IDEA or Gradle.
 
-The current application entry point is:
+From PowerShell:
+
+```powershell
+.\gradlew.bat run
+```
+
+The application entry point is:
 
 ```text
 com.alpinedigitalexperts.databaseanalyser.MainKt
 ```
 
-The analyzer connects to the database, discovers database objects, performs the configured analyses, prints the results, and generates the output reports.
+A normal run connects to PostgreSQL, discovers supported database objects and dependencies, performs the configured analysis, builds the quality report and Application Catalog, and writes the generated output files.
 
-## Current analyzer source structure
+## Source structure
 
-The main implementation is located under:
+Main implementation:
 
 ```text
 src/main/kotlin/com/alpinedigitalexperts/databaseanalyser/
 ```
 
-Important source files currently include:
+Important files include:
 
 ```text
+ApplicationCatalog.kt
+ApplicationCatalogJsonExporter.kt
 DatabaseAnalyzer.kt
+DatabaseCatalogBuilder.kt
 DatabaseConfig.kt
 DatabaseConnector.kt
 DatabaseMetadataAdapter.kt
@@ -409,11 +431,63 @@ DatabaseQualityReportHtmlExporter.kt
 DatabaseQualityReportJsonExporter.kt
 PostgreSqlDatabaseAdapter.kt
 QualityFinding.kt
-main.kt
+Main.kt
 ```
 
-The test implementation is located under:
+Tests:
 
 ```text
 src/test/kotlin/com/alpinedigitalexperts/databaseanalyser/
 ```
+
+Contract snapshot:
+
+```text
+contracts/workbench-catalog/
+```
+
+Detailed project documentation:
+
+```text
+docs/PROJECT_DOCUMENTATION.md
+```
+
+## Security
+
+Database credentials must not be committed.
+
+In particular:
+
+```text
+DB_PASSWORD
+```
+
+is obtained from the environment.
+
+Generated output, IDE files, build files, and local secret/environment files should remain excluded according to the repository's `.gitignore`.
+
+## Future work
+
+The current PostgreSQL implementation provides the core metadata, dependency, quality-analysis, aggregate-analysis, reporting, and Application Catalog foundation.
+
+Possible future extensions include:
+
+- proving more precise routine access modes such as `readsData`, `writesData`, `createsData`, and `deletesData` where PostgreSQL evidence permits;
+- triggers, jobs, schedules, tasks, synonyms, queues, and other supported database objects;
+- inferred semantic relationship candidates;
+- privacy/PII classification with provenance and confidence;
+- additional database-engine adapters;
+- configurable quality rules;
+- command-line configuration;
+- historical report comparison;
+- additional statistical analysis;
+- graphical reporting; and
+- CI/CD integration.
+
+Any future Application Catalog work must remain aligned with the pinned Workbench contract.
+
+## Documentation
+
+For the full chronological implementation history, design decisions, tests, encountered problems, and current project status, see:
+
+[`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md)

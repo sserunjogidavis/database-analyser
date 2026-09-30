@@ -680,6 +680,83 @@ class DatabaseQualityReportHtmlExporter {
 
 
             // ====================================================
+            // GROUPED AGGREGATE ANALYSIS
+            // ====================================================
+
+            builder.appendLine(
+                "<h3 class=\"section-title\">Grouped Aggregate Analysis</h3>"
+            )
+
+            if (table.groupedAggregates.isEmpty()) {
+
+                builder.appendLine(
+                    "<p class=\"muted\">No grouped aggregate analysis configured</p>"
+                )
+
+            } else {
+
+                for (aggregate in table.groupedAggregates) {
+
+                    builder.appendLine(
+                        "<p><strong>Group By:</strong> " +
+                            "${escape(aggregate.groupByColumn)} " +
+                            "&nbsp; <strong>Numeric Column:</strong> " +
+                            "${escape(aggregate.numericColumn)}</p>"
+                    )
+
+                    builder.appendLine("<div class=\"table-scroll\">")
+                    builder.appendLine("<table>")
+                    builder.appendLine("<thead>")
+                    builder.appendLine("<tr>")
+                    builder.appendLine("<th>Group</th>")
+                    builder.appendLine("<th>Rows</th>")
+                    builder.appendLine("<th>Minimum</th>")
+                    builder.appendLine("<th>Maximum</th>")
+                    builder.appendLine("<th>Average</th>")
+                    builder.appendLine("<th>Total</th>")
+                    builder.appendLine("</tr>")
+                    builder.appendLine("</thead>")
+                    builder.appendLine("<tbody>")
+
+                    for (group in aggregate.groups) {
+
+                        builder.appendLine("<tr>")
+
+                        builder.appendLine(
+                            "<td>${escape(group.groupValue ?: "NULL")}</td>"
+                        )
+
+                        builder.appendLine(
+                            "<td>${group.rowCount}</td>"
+                        )
+
+                        builder.appendLine(
+                            "<td>${escape(group.minimum ?: "")}</td>"
+                        )
+
+                        builder.appendLine(
+                            "<td>${escape(group.maximum ?: "")}</td>"
+                        )
+
+                        builder.appendLine(
+                            "<td>${escape(group.average ?: "")}</td>"
+                        )
+
+                        builder.appendLine(
+                            "<td>${escape(group.total ?: "")}</td>"
+                        )
+
+                        builder.appendLine("</tr>")
+                    }
+
+                    builder.appendLine("</tbody>")
+                    builder.appendLine("</table>")
+                    builder.appendLine("</div>")
+                }
+            }
+
+
+            // ====================================================
             // DATE ANALYSIS
             // ====================================================
 

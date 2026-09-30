@@ -126,6 +126,64 @@ class DatabaseQualityReportJsonExporterTest {
                     "\"earliest\": \"2026-08-01\""
                 )
             )
+
+            // ====================================================
+            // GROUPED AGGREGATE JSON
+            // ====================================================
+
+            assertTrue(
+                json.contains(
+                    "\"groupedAggregates\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"groupByColumn\": \"region\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"numericColumn\": \"total_amount\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"groupValue\": \"Central\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"groupValue\": \"Eastern\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"groupValue\": \"Western\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"total\": \"1500000.00\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"total\": \"2100000.00\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"total\": \"1800000.00\""
+                )
+            )
         }
     }
 
@@ -232,6 +290,64 @@ class DatabaseQualityReportJsonExporterTest {
             assertTrue(
                 json.contains(
                     "\"overallStatus\": \"REVIEW\""
+                )
+            )
+
+            // ====================================================
+            // GROUPED AGGREGATE FILE JSON
+            // ====================================================
+
+            assertTrue(
+                json.contains(
+                    "\"groupedAggregates\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"groupByColumn\": \"region\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"numericColumn\": \"total_amount\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"groupValue\": \"Central\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"groupValue\": \"Eastern\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"groupValue\": \"Western\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"total\": \"1500000.00\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"total\": \"2100000.00\""
+                )
+            )
+
+            assertTrue(
+                json.contains(
+                    "\"total\": \"1800000.00\""
                 )
             )
         }

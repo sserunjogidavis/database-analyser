@@ -58,7 +58,10 @@ data class TableQualityReport(
     val foreignKeys: List<ForeignKeyQualityReport>,
 
     val hasPrimaryKey: Boolean,
-    val potentialDuplicateRecordCount: Long
+    val potentialDuplicateRecordCount: Long,
+
+    val groupedAggregates: List<GroupedNumericAggregateReport> =
+        emptyList()
 ) {
 
     val qualifiedName: String
@@ -127,3 +130,27 @@ data class ForeignKeyQualityReport(
                 "$referencedTableName." +
                 referencedColumnName
 }
+
+
+// ================================================================
+// GROUPED AGGREGATE REPORT
+// ================================================================
+
+@Serializable
+data class GroupedNumericAggregateReport(
+    val groupByColumn: String,
+    val numericColumn: String,
+    val groups: List<GroupedNumericAggregateValueReport>
+)
+
+
+@Serializable
+data class GroupedNumericAggregateValueReport(
+    val groupValue: String?,
+    val rowCount: Long,
+
+    val minimum: String?,
+    val maximum: String?,
+    val average: String?,
+    val total: String?
+)

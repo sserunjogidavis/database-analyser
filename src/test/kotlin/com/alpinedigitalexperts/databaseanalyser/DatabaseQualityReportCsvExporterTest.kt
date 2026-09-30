@@ -88,6 +88,58 @@ class DatabaseQualityReportCsvExporterTest {
                 )
             )
 
+            // ====================================================
+            // GROUPED AGGREGATE CSV
+            // ====================================================
+
+            assertTrue(
+                csv.contains(
+                    "GROUPED AGGREGATE ANALYSIS"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "Group By Column,Numeric Column,Group Value,Row Count,Minimum,Maximum,Average,Total"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "companydb,reporting,monthly_sales,region,total_amount,Central,1"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "companydb,reporting,monthly_sales,region,total_amount,Eastern,1"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "companydb,reporting,monthly_sales,region,total_amount,Western,1"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "1500000.00"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "2100000.00"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "1800000.00"
+                )
+            )
+
             assertTrue(
                 csv.contains(
                     "SUMMARY"
@@ -220,6 +272,58 @@ class DatabaseQualityReportCsvExporterTest {
             assertTrue(
                 csv.contains(
                     "Leading/Trailing Whitespace Count"
+                )
+            )
+
+            // ====================================================
+            // GROUPED AGGREGATE FILE CSV
+            // ====================================================
+
+            assertTrue(
+                csv.contains(
+                    "GROUPED AGGREGATE ANALYSIS"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "Group By Column,Numeric Column,Group Value,Row Count,Minimum,Maximum,Average,Total"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "companydb,reporting,monthly_sales,region,total_amount,Central,1"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "companydb,reporting,monthly_sales,region,total_amount,Eastern,1"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "companydb,reporting,monthly_sales,region,total_amount,Western,1"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "1500000.00"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "2100000.00"
+                )
+            )
+
+            assertTrue(
+                csv.contains(
+                    "1800000.00"
                 )
             )
 

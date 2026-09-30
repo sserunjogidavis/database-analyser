@@ -1218,4 +1218,682 @@ class PostgreSqlDatabaseAdapter(
             )
         }
     }
+
+// ============================================================
+    // DATABASE DEPENDENCIES
+    // ============================================================
+
+    override fun discoverDependencies(): List<DiscoveredDependency> {
+
+        val databaseName =
+            getDatabaseName()
+
+        val dependencies =
+            mutableListOf<DiscoveredDependency>()
+
+        // ========================================================
+        // FOREIGN KEY DEPENDENCIES
+        // ========================================================
+
+        val foreignKeySql = """
+            SELECT
+                foreign_key.conname
+                    AS dependency_name,
+
+                source_schema.nspname
+                    AS source_schema_name,
+
+                source_table.relname
+                    AS source_table_name,
+
+                source_attribute.attname
+                    AS source_column_name,
+
+                target_schema.nspname
+                    AS target_schema_name,
+
+                target_table.relname
+                    AS target_table_name,
+
+                target_attribute.attname
+                    AS target_column_name
+
+            FROM pg_constraint foreign_key
+
+            JOIN pg_class source_table
+                ON source_table.oid =
+                   foreign_key.conrelid
+
+            JOIN pg_namespace source_schema
+                ON source_schema.oid =
+                   source_table.relnamespace
+
+            JOIN pg_class target_table
+                ON target_table.oid =
+                   foreign_key.confrelid
+
+            JOIN pg_namespace target_schema
+                ON target_schema.oid =
+                   target_table.relnamespace
+
+            CROSS JOIN LATERAL
+                unnest(
+                    foreign_key.conkey,
+                    foreign_key.confkey
+                )
+                WITH ORDINALITY
+                AS member(
+                    source_attribute_number,
+                    target_attribute_number,
+                    member_order
+                )
+
+            JOIN pg_attribute source_attribute
+                ON source_attribute.attrelid =
+                   foreign_key.conrelid
+                AND source_attribute.attnum =
+                    member.source_attribute_number
+
+            JOIN pg_attribute target_attribute
+                ON target_attribute.attrelid =
+                   foreign_key.confrelid
+                AND target_attribute.attnum =
+                    member.target_attribute_number
+
+            WHERE foreign_key.contype = 'f'
+
+            AND source_schema.nspname NOT IN (
+                'pg_catalog',
+                'information_schema'
+            )
+
+            AND source_schema.nspname
+                NOT LIKE 'pg_toast%'
+
+            AND source_schema.nspname
+                NOT LIKE 'pg_temp_%'
+
+            ORDER BY
+                source_schema.nspname,
+                source_table.relname,
+                foreign_key.conname,
+                member.member_order
+        """.trimIndent()
+
+        connection.prepareStatement(
+            foreignKeySql
+        ).use { statement ->
+
+            statement.executeQuery().use { resultSet ->
+
+                while (resultSet.next()) {
+
+                    dependencies.add(
+                        DiscoveredDependency(
+                            databaseName =
+                                databaseName,
+
+                            sourceSchemaName =
+                                resultSet.getString(
+                                    "source_schema_name"
+                                ),
+
+                            sourceObjectName =
+                                resultSet.getString(
+                                    "source_table_name"
+                                ),
+
+                            sourceObjectKind =
+                                DiscoveredDependencyObjectKind.TABLE,
+
+                            targetSchemaName =
+                                resultSet.getString(
+                                    "target_schema_name"
+                                ),
+
+                            targetObjectName =
+                                resultSet.getString(
+                                    "target_table_name"
+                                ),
+
+                            targetObjectKind =
+                                DiscoveredDependencyObjectKind.TABLE,
+
+                            dependencyKind =
+                                DiscoveredDependencyKind.FOREIGN_KEY,
+
+                            sourceSubObjectName =
+                                resultSet.getString(
+                                    "source_column_name"
+                                ),
+
+                            targetSubObjectName =
+                                resultSet.getString(
+                                    "target_column_name"
+                                ),
+
+                            dependencyName =
+                                resultSet.getString(
+                                    "dependency_name"
+                                )
+                        )
+                    )
+                }
+            }
+        }
+
+        // ========================================================
+        // VIEW AND MATERIALIZED VIEW DEPENDENCIES
+        // ========================================================
+
+        val viewDependencySql = """
+            SELECT DISTINCT
+                source_schema.nspname
+                    AS source_schema_name,
+
+                source_relation.relname
+                    AS source_object_name,
+
+                source_relation.relkind
+                    AS source_object_kind,
+
+                target_schema.nspname
+                    AS target_schema_name,
+
+                target_relation.relname
+                    AS target_object_name,
+
+                target_relation.relkind
+                    AS target_object_kind
+
+            FROM pg_rewrite rewrite_entry
+
+            JOIN pg_class source_relation
+                ON source_relation.oid =
+                   rewrite_entry.ev_class
+
+            JOIN pg_namespace source_schema
+                ON source_schema.oid =
+                   source_relation.relnamespace
+
+            JOIN pg_depend dependency_entry
+                ON dependency_entry.classid =
+                   'pg_rewrite'::regclass
+                AND dependency_entry.objid =
+                    rewrite_entry.oid
+                AND dependency_entry.refclassid =
+                    'pg_class'::regclass
+
+            JOIN pg_class target_relation
+                ON target_relation.oid =
+                   dependency_entry.refobjid
+
+            JOIN pg_namespace target_schema
+                ON target_schema.oid =
+                   target_relation.relnamespace
+
+            WHERE source_relation.relkind IN (
+                'v',
+                'm'
+            )
+
+            AND target_relation.oid <>
+                source_relation.oid
+
+            AND source_schema.nspname NOT IN (
+                'pg_catalog',
+                'information_schema'
+            )
+
+            AND source_schema.nspname
+                NOT LIKE 'pg_toast%'
+
+            AND source_schema.nspname
+                NOT LIKE 'pg_temp_%'
+
+            AND target_schema.nspname NOT IN (
+                'pg_catalog',
+                'information_schema'
+            )
+
+            AND target_schema.nspname
+                NOT LIKE 'pg_toast%'
+
+            AND target_schema.nspname
+                NOT LIKE 'pg_temp_%'
+
+            ORDER BY
+                source_schema.nspname,
+                source_relation.relname,
+                target_schema.nspname,
+                target_relation.relname
+        """.trimIndent()
+
+        connection.prepareStatement(
+            viewDependencySql
+        ).use { statement ->
+
+            statement.executeQuery().use { resultSet ->
+
+                while (resultSet.next()) {
+
+                    val sourceObjectKind =
+                        when (
+                            resultSet.getString(
+                                "source_object_kind"
+                            )
+                        ) {
+                            "v" ->
+                                DiscoveredDependencyObjectKind.VIEW
+
+                            "m" ->
+                                DiscoveredDependencyObjectKind.MATERIALIZED_VIEW
+
+                            else ->
+                                DiscoveredDependencyObjectKind.UNKNOWN
+                        }
+
+                    val dependencyKind =
+                        when (sourceObjectKind) {
+
+                            DiscoveredDependencyObjectKind.VIEW ->
+                                DiscoveredDependencyKind.VIEW_REFERENCE
+
+                            DiscoveredDependencyObjectKind.MATERIALIZED_VIEW ->
+                                DiscoveredDependencyKind.MATERIALIZED_VIEW_REFERENCE
+
+                            else ->
+                                DiscoveredDependencyKind.OTHER
+                        }
+
+                    val targetObjectKind =
+                        when (
+                            resultSet.getString(
+                                "target_object_kind"
+                            )
+                        ) {
+                            "r", "p" ->
+                                DiscoveredDependencyObjectKind.TABLE
+
+                            "v" ->
+                                DiscoveredDependencyObjectKind.VIEW
+
+                            "m" ->
+                                DiscoveredDependencyObjectKind.MATERIALIZED_VIEW
+
+                            "S" ->
+                                DiscoveredDependencyObjectKind.SEQUENCE
+
+                            else ->
+                                DiscoveredDependencyObjectKind.UNKNOWN
+                        }
+
+                    dependencies.add(
+                        DiscoveredDependency(
+                            databaseName =
+                                databaseName,
+
+                            sourceSchemaName =
+                                resultSet.getString(
+                                    "source_schema_name"
+                                ),
+
+                            sourceObjectName =
+                                resultSet.getString(
+                                    "source_object_name"
+                                ),
+
+                            sourceObjectKind =
+                                sourceObjectKind,
+
+                            targetSchemaName =
+                                resultSet.getString(
+                                    "target_schema_name"
+                                ),
+
+                            targetObjectName =
+                                resultSet.getString(
+                                    "target_object_name"
+                                ),
+
+                            targetObjectKind =
+                                targetObjectKind,
+
+                            dependencyKind =
+                                dependencyKind
+                        )
+                    )
+                }
+            }
+        }
+
+
+        // ========================================================
+        // SEQUENCE DEPENDENCIES
+        // ========================================================
+
+        val sequenceDependencySql = """
+            SELECT DISTINCT
+                table_schema.nspname
+                    AS source_schema_name,
+
+                table_entry.relname
+                    AS source_table_name,
+
+                table_attribute.attname
+                    AS source_column_name,
+
+                sequence_schema.nspname
+                    AS target_schema_name,
+
+                sequence_entry.relname
+                    AS target_sequence_name
+
+            FROM pg_attrdef column_default
+
+            JOIN pg_class table_entry
+                ON table_entry.oid =
+                   column_default.adrelid
+
+            JOIN pg_namespace table_schema
+                ON table_schema.oid =
+                   table_entry.relnamespace
+
+            JOIN pg_attribute table_attribute
+                ON table_attribute.attrelid =
+                   column_default.adrelid
+                AND table_attribute.attnum =
+                    column_default.adnum
+
+            JOIN pg_depend dependency_entry
+                ON dependency_entry.classid =
+                   'pg_attrdef'::regclass
+                AND dependency_entry.objid =
+                    column_default.oid
+                AND dependency_entry.refclassid =
+                    'pg_class'::regclass
+
+            JOIN pg_class sequence_entry
+                ON sequence_entry.oid =
+                   dependency_entry.refobjid
+                AND sequence_entry.relkind = 'S'
+
+            JOIN pg_namespace sequence_schema
+                ON sequence_schema.oid =
+                   sequence_entry.relnamespace
+
+            WHERE table_entry.relkind IN (
+                'r',
+                'p'
+            )
+
+            AND table_schema.nspname NOT IN (
+                'pg_catalog',
+                'information_schema'
+            )
+
+            AND table_schema.nspname
+                NOT LIKE 'pg_toast%'
+
+            AND table_schema.nspname
+                NOT LIKE 'pg_temp_%'
+
+            AND sequence_schema.nspname NOT IN (
+                'pg_catalog',
+                'information_schema'
+            )
+
+            AND sequence_schema.nspname
+                NOT LIKE 'pg_toast%'
+
+            AND sequence_schema.nspname
+                NOT LIKE 'pg_temp_%'
+
+            ORDER BY
+                table_schema.nspname,
+                table_entry.relname,
+                table_attribute.attname,
+                sequence_schema.nspname,
+                sequence_entry.relname
+        """.trimIndent()
+
+        connection.prepareStatement(
+            sequenceDependencySql
+        ).use { statement ->
+
+            statement.executeQuery().use { resultSet ->
+
+                while (resultSet.next()) {
+
+                    dependencies.add(
+                        DiscoveredDependency(
+                            databaseName =
+                                databaseName,
+
+                            sourceSchemaName =
+                                resultSet.getString(
+                                    "source_schema_name"
+                                ),
+
+                            sourceObjectName =
+                                resultSet.getString(
+                                    "source_table_name"
+                                ),
+
+                            sourceObjectKind =
+                                DiscoveredDependencyObjectKind.TABLE,
+
+                            targetSchemaName =
+                                resultSet.getString(
+                                    "target_schema_name"
+                                ),
+
+                            targetObjectName =
+                                resultSet.getString(
+                                    "target_sequence_name"
+                                ),
+
+                            targetObjectKind =
+                                DiscoveredDependencyObjectKind.SEQUENCE,
+
+                            dependencyKind =
+                                DiscoveredDependencyKind.SEQUENCE_REFERENCE,
+
+                            sourceSubObjectName =
+                                resultSet.getString(
+                                    "source_column_name"
+                                )
+                        )
+                    )
+                }
+            }
+        }
+
+
+        // ========================================================
+        // ROUTINE DEPENDENCIES
+        // ========================================================
+
+        val routineDependencySql = """
+            SELECT DISTINCT
+                source_schema.nspname
+                    AS source_schema_name,
+
+                source_routine.proname
+                    AS source_routine_name,
+
+                pg_get_function_identity_arguments(
+                    source_routine.oid
+                ) AS source_identity_arguments,
+
+                source_routine.prokind
+                    AS source_routine_kind,
+
+                target_schema.nspname
+                    AS target_schema_name,
+
+                target_relation.relname
+                    AS target_object_name,
+
+                target_relation.relkind
+                    AS target_object_kind
+
+            FROM pg_depend dependency_entry
+
+            JOIN pg_proc source_routine
+                ON dependency_entry.classid =
+                   'pg_proc'::regclass
+                AND dependency_entry.objid =
+                    source_routine.oid
+
+            JOIN pg_namespace source_schema
+                ON source_schema.oid =
+                   source_routine.pronamespace
+
+            JOIN pg_class target_relation
+                ON dependency_entry.refclassid =
+                   'pg_class'::regclass
+                AND dependency_entry.refobjid =
+                    target_relation.oid
+
+            JOIN pg_namespace target_schema
+                ON target_schema.oid =
+                   target_relation.relnamespace
+
+            WHERE source_routine.prokind IN (
+                'f',
+                'p'
+            )
+
+            AND target_relation.relkind IN (
+                'r',
+                'p',
+                'v',
+                'm',
+                'S'
+            )
+
+            AND source_schema.nspname NOT IN (
+                'pg_catalog',
+                'information_schema'
+            )
+
+            AND source_schema.nspname
+                NOT LIKE 'pg_toast%'
+
+            AND source_schema.nspname
+                NOT LIKE 'pg_temp_%'
+
+            AND target_schema.nspname NOT IN (
+                'pg_catalog',
+                'information_schema'
+            )
+
+            AND target_schema.nspname
+                NOT LIKE 'pg_toast%'
+
+            AND target_schema.nspname
+                NOT LIKE 'pg_temp_%'
+
+            ORDER BY
+                source_schema.nspname,
+                source_routine.proname,
+                source_identity_arguments,
+                target_schema.nspname,
+                target_relation.relname
+        """.trimIndent()
+
+        connection.prepareStatement(
+            routineDependencySql
+        ).use { statement ->
+
+            statement.executeQuery().use { resultSet ->
+
+                while (resultSet.next()) {
+
+                    val sourceObjectKind =
+                        when (
+                            resultSet.getString(
+                                "source_routine_kind"
+                            )
+                        ) {
+                            "f" ->
+                                DiscoveredDependencyObjectKind.FUNCTION
+
+                            "p" ->
+                                DiscoveredDependencyObjectKind.STORED_PROCEDURE
+
+                            else ->
+                                DiscoveredDependencyObjectKind.UNKNOWN
+                        }
+
+                    val targetObjectKind =
+                        when (
+                            resultSet.getString(
+                                "target_object_kind"
+                            )
+                        ) {
+                            "r", "p" ->
+                                DiscoveredDependencyObjectKind.TABLE
+
+                            "v" ->
+                                DiscoveredDependencyObjectKind.VIEW
+
+                            "m" ->
+                                DiscoveredDependencyObjectKind.MATERIALIZED_VIEW
+
+                            "S" ->
+                                DiscoveredDependencyObjectKind.SEQUENCE
+
+                            else ->
+                                DiscoveredDependencyObjectKind.UNKNOWN
+                        }
+
+                    dependencies.add(
+                        DiscoveredDependency(
+                            databaseName =
+                                databaseName,
+
+                            sourceSchemaName =
+                                resultSet.getString(
+                                    "source_schema_name"
+                                ),
+
+                            sourceObjectName =
+                                resultSet.getString(
+                                    "source_routine_name"
+                                ),
+
+                            sourceObjectKind =
+                                sourceObjectKind,
+
+                            sourceIdentityArguments =
+                                resultSet.getString(
+                                    "source_identity_arguments"
+                                ),
+
+                            targetSchemaName =
+                                resultSet.getString(
+                                    "target_schema_name"
+                                ),
+
+                            targetObjectName =
+                                resultSet.getString(
+                                    "target_object_name"
+                                ),
+
+                            targetObjectKind =
+                                targetObjectKind,
+
+                            dependencyKind =
+                                DiscoveredDependencyKind.ROUTINE_REFERENCE
+                        )
+                    )
+                }
+            }
+        }
+
+        return dependencies
+            .distinct()
+    }
 }

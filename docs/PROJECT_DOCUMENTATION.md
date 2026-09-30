@@ -797,6 +797,8 @@ DatabaseQualityReportHtmlExporterTest.kt
 DatabaseQualityReportJsonExporterTest.kt
 NonPublicSchemaIntegrationTest.kt
 PostgreSqlDatabaseAdapterIntegrationTest.kt
+ApplicationCatalogIntegrationTest.kt
+ApplicationCatalogSchemaValidationTest.kt
 ```
 
 Testing covers areas including:
@@ -809,7 +811,11 @@ Testing covers areas including:
 - report construction;
 - JSON export;
 - HTML export; and
-- CSV export.
+- CSV export;
+- Application Catalog construction;
+- Application Catalog dependency semantics;
+- overloaded routine dependency resolution; and
+- Application Catalog schema validation.
 
 The complete test suite can be run using:
 
@@ -930,6 +936,7 @@ The run successfully generated:
 database-quality-report.json
 database-quality-report.html
 database-quality-report.csv
+application-catalog.json
 ```
 
 and completed successfully.
@@ -972,7 +979,99 @@ The analyser must not independently introduce Application Catalog semantics that
 
 ---
 
-## 42. Problems Encountered During Development
+## 42. Application Catalog Export
+
+The analyser now builds and exports an Application Catalog in addition to the database-quality reports.
+
+The catalog is generated as:
+
+```text
+output/application-catalog.json
+```
+
+The catalog represents discovered PostgreSQL objects as Workbench-compatible nodes and relationships. Current exported object types include databases, schemas, tables, columns, primary keys, unique keys, foreign keys, indexes, sequences, views, materialized views, functions, and stored procedures when those objects exist in the analysed database.
+
+Catalog nodes use stable identifiers derived from the object type and qualified name. This makes repeated analysis deterministic for unchanged database objects.
+
+The generated catalog is serialized by `ApplicationCatalogJsonExporter.kt`.
+
+---
+
+## 43. Application Catalog Dependency Discovery
+
+Database dependency discovery was added through the metadata adapter and PostgreSQL implementation.
+
+The analyser can discover dependencies involving:
+
+- declared foreign keys;
+- ordinary views;
+- materialized views;
+- sequences used by database objects; and
+- functions and stored procedures that depend on database objects.
+
+Dependency discovery is separated from catalog interpretation. PostgreSQL-specific code discovers what PostgreSQL proves, while `DatabaseCatalogBuilder.kt` maps that evidence to the Application Catalog vocabulary defined by the pinned Workbench contract.
+
+The current contract-aligned mapping is:
+
+```text
+View dependency                 -> derivedFrom
+Materialized-view dependency    -> derivedFrom
+Routine data dependency         -> usesData
+Sequence dependency             -> dependsOn
+Declared foreign key            -> foreignKey object + includes + referencesKey
+```
+
+For executable database objects, `usesData` is used when a dependency is proven but PostgreSQL metadata does not establish a more specific read/write/create/delete access mode. The analyser therefore does not guess a more specific relationship.
+
+Declared foreign keys are represented through their physical foreign-key object. The foreign key includes its ordered source-column members and references the target primary or unique key. A redundant column-to-column `dependsOn` relationship is not emitted for the same declared foreign key.
+
+---
+
+## 44. Routine Overload Handling
+
+PostgreSQL permits overloaded functions and procedures with the same routine name but different argument signatures.
+
+To prevent dependency relationships from being attached to the wrong overload, routine discovery retains PostgreSQL identity arguments. Dependency discovery also carries the source routine identity arguments separately from the routine's bare object name.
+
+`DatabaseCatalogBuilder.kt` uses those identity arguments when resolving function and stored-procedure nodes. If identity arguments are unavailable, name-only resolution is used only when exactly one matching routine exists. Ambiguous matches are not guessed.
+
+An integration regression test creates overloaded functions and verifies that each overload is connected only to its correct dependency target.
+
+---
+
+## 45. Application Catalog Contract Validation
+
+Application Catalog compatibility is checked automatically.
+
+The project validates generated catalog documents against the pinned Workbench catalog schema and also verifies the integrity of the complete pinned contract snapshot.
+
+The Gradle task:
+
+```text
+verifyWorkbenchCatalogContract
+```
+
+checks the lock file, manifest, pinned Workbench commit, expected file hashes, and snapshot inventory.
+
+The normal Gradle `check` lifecycle depends on this verification task. Therefore:
+
+```powershell
+.\gradlew.bat check
+```
+
+runs the automated tests together with Workbench contract verification.
+
+The latest full verification completed successfully and reported the pinned Workbench commit:
+
+```text
+732de4ddf73969b31d1791bf454b0d924459b9f2
+```
+
+This provides a repeatable check that the analyser is still being developed against the expected Application Catalog contract snapshot.
+
+---
+
+## 46. Problems Encountered During Development
 
 Several useful problems were encountered during implementation.
 
@@ -1035,7 +1134,7 @@ Automated tests were used to verify that the changes remained consistent.
 
 ---
 
-## 43. Security Considerations
+## 47. Security Considerations
 
 Database credentials must not be committed to Git.
 
@@ -1053,7 +1152,7 @@ No hardcoded database password, API key, or authentication token was intentional
 
 ---
 
-## 44. Git and GitHub Workflow
+## 48. Git and GitHub Workflow
 
 Git is used for version control.
 
@@ -1074,7 +1173,7 @@ Generated reports and sensitive environment information should not be committed.
 
 ---
 
-## 45. Current Project Status
+## 49. Current Project Status
 
 The current implementation successfully provides:
 
@@ -1107,25 +1206,31 @@ The current implementation successfully provides:
 - structured database-quality reporting;
 - JSON export;
 - HTML export;
-- CSV export; and
+- CSV export;
+- Application Catalog graph export;
+- stable catalog node and relationship identifiers;
+- indexes, sequences, views, materialized views, functions, and stored-procedure metadata discovery;
+- database dependency discovery;
+- contract-aligned `derivedFrom`, `usesData`, `dependsOn`, `includes`, `indexes`, and `referencesKey` relationships;
+- overload-safe routine dependency resolution;
+- Application Catalog schema validation;
+- pinned Workbench contract verification; and
 - automated tests.
 
 The PostgreSQL analysis and data-quality foundation is therefore functional and tested.
 
 ---
 
-## 46. Remaining and Future Work
+## 50. Remaining and Future Work
 
 The current implementation provides a strong foundation, but the repository's wider Workbench contract describes capabilities beyond the completed data-quality analyser.
 
 Future work may include:
 
-- completing Application Catalog graph export;
-- validating exported catalog documents against the pinned schema;
 - shared positive and negative fixture conformance;
-- stable catalog identities across repeated analyses;
-- richer dependency discovery;
-- read/write/create/delete/call dependency representation;
+- broader real-world database compatibility testing;
+- richer dependency discovery where PostgreSQL can provide stronger evidence;
+- proven read/write/create/delete/call dependency representation where the access mode can be established;
 - trigger and scheduling relationships;
 - semantic relationship candidates;
 - PII classification with provenance and confidence;
@@ -1141,10 +1246,11 @@ Any model-affecting Application Catalog work must continue to follow the pinned 
 
 ---
 
-## 47. Conclusion
+## 51. Conclusion
 
 The Database Analyser has progressed from basic PostgreSQL connectivity to a structured database-analysis application capable of discovering metadata, evaluating multiple dimensions of data quality, performing aggregate analysis, and exporting results in several formats.
 
 The project was developed incrementally, with automated testing used to verify new functionality as it was introduced.
 
-The current implementation provides the working PostgreSQL analysis and quality-reporting foundation. Future development can build on this foundation while remaining aligned with the pinned Legacy Modernization Workbench Application Catalog contract.
+The current implementation provides a working PostgreSQL analysis, quality-reporting, and Workbench-aligned Application Catalog foundation. The implemented catalog export includes physical database structure and tested dependency semantics, while future development can extend the analyser without introducing semantics outside the pinned Legacy Modernization Workbench Application Catalog contract.
+

@@ -132,6 +132,58 @@ class DatabaseQualityReportHtmlExporterTest {
                     "2026-08-01"
                 )
             )
+
+            // ====================================================
+            // GROUPED AGGREGATE HTML
+            // ====================================================
+
+            assertTrue(
+                html.contains(
+                    "Grouped Aggregate Analysis"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "<strong>Group By:</strong> region"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "<strong>Numeric Column:</strong> total_amount"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "Central"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "Eastern"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "Western"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "2100000.00"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "1800000.00"
+                )
+            )
         }
     }
 
@@ -232,6 +284,64 @@ class DatabaseQualityReportHtmlExporterTest {
             assertTrue(
                 html.contains(
                     "REVIEW"
+                )
+            )
+
+            // ====================================================
+            // GROUPED AGGREGATE FILE HTML
+            // ====================================================
+
+            assertTrue(
+                html.contains(
+                    "Grouped Aggregate Analysis"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "<strong>Group By:</strong> region"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "<strong>Numeric Column:</strong> total_amount"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "Central"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "Eastern"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "Western"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "1500000.00"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "2100000.00"
+                )
+            )
+
+            assertTrue(
+                html.contains(
+                    "1800000.00"
                 )
             )
         }

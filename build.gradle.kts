@@ -25,6 +25,7 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation("com.networknt:json-schema-validator:3.0.7")
 }
 
 @CacheableTask

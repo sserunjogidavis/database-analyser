@@ -513,6 +513,144 @@ class DatabaseQualityReportBuilder(
                 )
             }
 
+        // ========================================================
+        // GROUPED AGGREGATE ANALYSIS
+        // ========================================================
+
+        val foreignKeyColumnNames =
+            foreignKeys
+                .map {
+                    it.columnName
+                }
+                .toSet()
+
+        val categoricalNameHints =
+            listOf(
+                "region",
+                "category",
+                "type",
+                "status",
+                "department",
+                "location",
+                "country",
+                "city",
+                "state",
+                "segment",
+                "group",
+                "class",
+                "level"
+            )
+
+        val groupingColumns =
+            columns
+                .filter { column ->
+
+                    val columnName =
+                        column.name.lowercase()
+
+                    val isText =
+                        column.dataType
+                            .lowercase() in textTypes
+
+                    val hasCategoricalName =
+                        categoricalNameHints.any { hint ->
+                            columnName == hint ||
+                                columnName.startsWith("${hint}_") ||
+                                columnName.endsWith("_$hint") ||
+                                columnName.contains("_${hint}_")
+                        }
+
+                    val isForeignKey =
+                        column.name in foreignKeyColumnNames
+
+                    val isPrimaryKey =
+                        column.name in primaryKeys
+
+                    val isUnique =
+                        column.name in uniqueColumns
+
+                    !isPrimaryKey &&
+                        !isUnique &&
+                        (
+                            (isText && hasCategoricalName) ||
+                                isForeignKey
+                            )
+                }
+
+        val numericBusinessColumns =
+            columns
+                .filter { column ->
+
+                    val isNumeric =
+                        column.dataType
+                            .lowercase() in numericTypes
+
+                    val isIdentifier =
+                        analyzer.isIdentifierColumn(
+                            schemaName = schemaName,
+                            tableName = tableName,
+                            columnName = column.name
+                        )
+
+                    isNumeric &&
+                        !isIdentifier
+                }
+
+        val groupedAggregates =
+            groupingColumns
+                .flatMap { groupingColumn ->
+
+                    numericBusinessColumns.map { numericColumn ->
+
+                        val groups =
+                            analyzer
+                                .getGroupedNumericAggregates(
+                                    schemaName = schemaName,
+                                    tableName = tableName,
+                                    groupByColumn = groupingColumn.name,
+                                    numericColumn = numericColumn.name
+                                )
+                                .map { aggregate ->
+
+                                    GroupedNumericAggregateValueReport(
+                                        groupValue =
+                                            aggregate.groupValue,
+
+                                        rowCount =
+                                            aggregate.rowCount,
+
+                                        minimum =
+                                            aggregate.minimum
+                                                ?.toPlainString(),
+
+                                        maximum =
+                                            aggregate.maximum
+                                                ?.toPlainString(),
+
+                                        average =
+                                            aggregate.average
+                                                ?.toPlainString(),
+
+                                        total =
+                                            aggregate.total
+                                                ?.toPlainString()
+                                    )
+                                }
+
+                        GroupedNumericAggregateReport(
+                            groupByColumn =
+                                groupingColumn.name,
+
+                            numericColumn =
+                                numericColumn.name,
+
+                            groups =
+                                groups
+                        )
+                    }
+                }
+
+
         return TableQualityReport(
             databaseName =
                 databaseName,
@@ -545,7 +683,10 @@ class DatabaseQualityReportBuilder(
                 ),
 
             potentialDuplicateRecordCount =
-                potentialDuplicateRecordCount
+                potentialDuplicateRecordCount,
+
+            groupedAggregates =
+                groupedAggregates
         )
     }
 
