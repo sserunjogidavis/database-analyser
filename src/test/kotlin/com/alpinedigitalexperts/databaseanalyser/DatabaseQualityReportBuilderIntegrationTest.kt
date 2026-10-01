@@ -446,25 +446,17 @@ class DatabaseQualityReportBuilderIntegrationTest {
 
 
     @Test
-    fun `detects high null percentage in database summary`() {
+    fun `detects exact high null percentage from reproducible fixture`() {
 
         DatabaseConnector.connect().use { connection ->
 
-            connection.autoCommit =
-                false
+            connection.autoCommit = false
 
             try {
 
-                connection.prepareStatement(
-                    """
-                    UPDATE employees
-                    SET salary = NULL
-                    WHERE employee_id = 1
-                    """.trimIndent()
-                ).use { statement ->
-
-                    statement.executeUpdate()
-                }
+                DatabaseTestFixture.loadQualityFixture(
+                    connection
+                )
 
                 val analyzer =
                     DatabaseAnalyzer(
@@ -477,51 +469,34 @@ class DatabaseQualityReportBuilderIntegrationTest {
                     )
 
                 val report =
-                    builder.buildDatabaseReport()
+                    builder.buildTableReport(
+                        schemaName = "quality_test",
+                        tableName = "employees"
+                    )
 
-                val employees =
-                    report.tables.single {
-                        it.schemaName == "public" &&
-                            it.tableName == "employees"
-                    }
+                assertEquals(
+                    20L,
+                    report.rowCount
+                )
 
                 val salary =
-                    employees.columns.single {
+                    report.columns.single {
                         it.columnName == "salary"
                     }
 
                 assertEquals(
-                    1L,
+                    6L,
                     salary.nullCount
                 )
 
-                assertTrue(
-                    salary.nullPercentage >= 20.0
+                assertEquals(
+                    30.0,
+                    salary.nullPercentage
                 )
 
                 assertEquals(
                     1L,
-                    report.summary.highNullPercentageIssues
-                )
-
-                assertEquals(
-                    0L,
-                    report.summary.whitespaceOnlyIssues
-                )
-
-                assertEquals(
-                    0L,
-                    report.summary.leadingTrailingWhitespaceIssues
-                )
-
-                assertEquals(
-                    2L,
-                    report.summary.totalIssues
-                )
-
-                assertEquals(
-                    DatabaseQualityStatus.REVIEW,
-                    report.summary.overallStatus
+                    salary.potentialNumericOutlierCount
                 )
 
             } finally {
@@ -713,44 +688,17 @@ class DatabaseQualityReportBuilderIntegrationTest {
 
 
     @Test
-    fun `automatically discovers grouped aggregate analysis for a generic table`() {
+    fun `builds grouped aggregate analysis from reproducible fixture`() {
 
         DatabaseConnector.connect().use { connection ->
 
-            connection.autoCommit =
-                false
+            connection.autoCommit = false
 
             try {
 
-                connection.prepareStatement(
-                    """
-                    CREATE TABLE public.aggregate_analysis_test (
-                        test_id INTEGER PRIMARY KEY,
-                        category VARCHAR(100) NOT NULL,
-                        amount NUMERIC(12, 2) NOT NULL
-                    )
-                    """.trimIndent()
-                ).use { statement ->
-
-                    statement.executeUpdate()
-                }
-
-                connection.prepareStatement(
-                    """
-                    INSERT INTO public.aggregate_analysis_test (
-                        test_id,
-                        category,
-                        amount
-                    )
-                    VALUES
-                        (1, 'Food', 100.00),
-                        (2, 'Food', 200.00),
-                        (3, 'Books', 50.00)
-                    """.trimIndent()
-                ).use { statement ->
-
-                    statement.executeUpdate()
-                }
+                DatabaseTestFixture.loadQualityFixture(
+                    connection
+                )
 
                 val analyzer =
                     DatabaseAnalyzer(
@@ -764,9 +712,14 @@ class DatabaseQualityReportBuilderIntegrationTest {
 
                 val report =
                     builder.buildTableReport(
-                        schemaName = "public",
-                        tableName = "aggregate_analysis_test"
+                        schemaName = "quality_test",
+                        tableName = "aggregate_analysis"
                     )
+
+                assertEquals(
+                    15L,
+                    report.rowCount
+                )
 
                 assertEquals(
                     1,
@@ -787,7 +740,7 @@ class DatabaseQualityReportBuilderIntegrationTest {
                 )
 
                 assertEquals(
-                    2,
+                    3,
                     aggregate.groups.size
                 )
 
@@ -797,7 +750,7 @@ class DatabaseQualityReportBuilderIntegrationTest {
                     }
 
                 assertEquals(
-                    2L,
+                    5L,
                     food.rowCount
                 )
 
@@ -807,12 +760,12 @@ class DatabaseQualityReportBuilderIntegrationTest {
                 )
 
                 assertEquals(
-                    "200.00",
+                    "180.00",
                     food.maximum
                 )
 
                 assertEquals(
-                    "300.00",
+                    "700.00",
                     food.total
                 )
 
@@ -820,7 +773,7 @@ class DatabaseQualityReportBuilderIntegrationTest {
                     food.average
                         ?.toBigDecimal()
                         ?.compareTo(
-                            "150.00".toBigDecimal()
+                            "140.00".toBigDecimal()
                         ) == 0
                 )
 
@@ -830,7 +783,7 @@ class DatabaseQualityReportBuilderIntegrationTest {
                     }
 
                 assertEquals(
-                    1L,
+                    5L,
                     books.rowCount
                 )
 
@@ -840,17 +793,50 @@ class DatabaseQualityReportBuilderIntegrationTest {
                 )
 
                 assertEquals(
-                    "50.00",
+                    "90.00",
                     books.maximum
                 )
 
                 assertEquals(
-                    "50.00",
+                    "350.00",
                     books.total
                 )
 
                 assertTrue(
                     books.average
+                        ?.toBigDecimal()
+                        ?.compareTo(
+                            "70.00".toBigDecimal()
+                        ) == 0
+                )
+
+                val transport =
+                    aggregate.groups.single {
+                        it.groupValue == "Transport"
+                    }
+
+                assertEquals(
+                    5L,
+                    transport.rowCount
+                )
+
+                assertEquals(
+                    "30.00",
+                    transport.minimum
+                )
+
+                assertEquals(
+                    "70.00",
+                    transport.maximum
+                )
+
+                assertEquals(
+                    "250.00",
+                    transport.total
+                )
+
+                assertTrue(
+                    transport.average
                         ?.toBigDecimal()
                         ?.compareTo(
                             "50.00".toBigDecimal()
@@ -866,3 +852,4 @@ class DatabaseQualityReportBuilderIntegrationTest {
 
 
 }
+

@@ -86,6 +86,51 @@ The database password is read from `DB_PASSWORD` and must not be committed to th
 
 During development, PostgreSQL 16 is run in Docker and the analyser is tested against the `companydb` database.
 
+
+## Reproducible Docker development database
+
+The repository includes a `compose.yml` file so another developer can create the same PostgreSQL development environment without manually recreating the container configuration.
+
+The Compose configuration uses:
+
+```text
+PostgreSQL: 16
+Database: companydb
+User: analyst
+Port: 5432
+Password: supplied through DB_PASSWORD
+```
+
+The password is intentionally not written into `compose.yml`. Before starting the container, set `DB_PASSWORD` in the local environment.
+
+Example in PowerShell:
+
+```powershell
+$env:DB_PASSWORD = "your-local-password"
+```
+
+Then start PostgreSQL with:
+
+```powershell
+docker compose up -d
+```
+
+Check the container with:
+
+```powershell
+docker compose ps
+```
+
+Stop the environment with:
+
+```powershell
+docker compose down
+```
+
+The Compose configuration uses a named Docker volume so PostgreSQL data can persist between normal container restarts.
+
+If a separately created container named `database-analyser-postgres` already exists, stop or remove that old container before starting the Compose-managed environment to avoid a container-name or port conflict.
+
 ## Metadata discovery
 
 The PostgreSQL metadata adapter discovers supported database objects including:
@@ -339,7 +384,10 @@ The project contains unit and integration tests covering:
 - Application Catalog construction;
 - Application Catalog schema validation;
 - database dependency discovery;
-- overloaded routine dependency resolution; and
+- overloaded routine dependency resolution;
+- reproducible SQL fixture loading;
+- planted-defect assertions for NULL percentages, malformed emails, numeric outliers, duplicate records, future dates, and invalid foreign-key references;
+- multi-row grouped aggregate verification; and
 - Workbench contract verification.
 
 Run the tests on Windows with:
@@ -355,6 +403,82 @@ Run the complete verification gate with:
 ```
 
 The latest completed verification passed successfully and verified the pinned Workbench Application Catalog contract.
+
+
+## Reproducible database-quality integration fixture
+
+The repository contains a dedicated integration-test fixture at:
+
+```text
+src/test/resources/sql/database-quality-fixture.sql
+```
+
+The fixture creates an isolated PostgreSQL schema:
+
+```text
+quality_test
+```
+
+This prevents the stronger integration tests from depending on whatever data happens to exist in the normal development tables.
+
+The fixture intentionally contains known data-quality conditions so tests can assert exact expected results rather than only checking that a value is non-null or happens to be zero.
+
+The main fixture includes:
+
+```text
+20 employee rows
+6 NULL salaries = 30% NULL
+2 malformed email addresses
+1 deliberately extreme numeric salary outlier
+1 future hire date
+1 exact duplicate business record
+1 orphaned foreign-key value
+```
+
+The orphaned foreign-key case uses a PostgreSQL `NOT VALID` foreign-key constraint. This allows the fixture to retain one deliberately invalid existing reference while still exposing a declared foreign-key definition to the analyser.
+
+The grouped aggregate fixture contains:
+
+```text
+15 rows
+3 categories
+5 rows per category
+```
+
+This provides enough observations per group to exercise grouped minimum, maximum, average, total, and row-count calculations more meaningfully than the previous three-row dataset.
+
+The fixture is loaded by:
+
+```text
+DatabaseTestFixture.kt
+```
+
+and verified by:
+
+```text
+DatabaseTestFixtureIntegrationTest.kt
+DatabaseQualityReportBuilderIntegrationTest.kt
+```
+
+Tests load the fixture inside a database transaction and roll the transaction back afterward. The fixture therefore does not permanently replace or pollute the normal `public` and `reporting` development data.
+
+A focused fixture test can be run with:
+
+```powershell
+.\gradlew.bat test --tests "com.alpinedigitalexperts.databaseanalyser.DatabaseTestFixtureIntegrationTest"
+```
+
+The stronger report-builder integration tests can be run with:
+
+```powershell
+.\gradlew.bat test --tests "com.alpinedigitalexperts.databaseanalyser.DatabaseQualityReportBuilderIntegrationTest"
+```
+
+The full clean test suite can be run with:
+
+```powershell
+.\gradlew.bat clean test
+```
 
 ## Latest development database result
 
@@ -438,6 +562,18 @@ Tests:
 
 ```text
 src/test/kotlin/com/alpinedigitalexperts/databaseanalyser/
+```
+
+Reproducible SQL test fixtures:
+
+```text
+src/test/resources/sql/
+```
+
+Docker Compose environment:
+
+```text
+compose.yml
 ```
 
 Contract snapshot:
