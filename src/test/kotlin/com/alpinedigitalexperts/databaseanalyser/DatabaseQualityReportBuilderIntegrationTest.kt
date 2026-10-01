@@ -5,6 +5,17 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
+// TODO(@sserunjogidavis): The test data is too small to validate the quality analysis.
+// public.departments and public.employees hold ~3 rows each (docs section 39), and
+// aggregate_analysis_test below has 3 rows. At that size:
+//   - outlier detection (median/MAD, modified z > 3.5) needs >= 3 values to run at all
+//     and practically never fires on 3, so "0 outliers" proves nothing;
+//   - the high-NULL thresholds (20% / 50%) move in 33% steps, so one NULL = WARNING;
+//   - grouped aggregates and duplicate-record checks collapse to 1-2 rows per group.
+// Suggestion: seed fixtures with planted defects so every finding type has a case that
+// must fire and one that must not, e.g. ~50-100 salaries with 2 known outliers, a column
+// that is ~30% NULL, near-duplicate employees, malformed emails, and an orphaned FK row
+// (insert under a NOT VALID constraint). Assert the exact expected counts.
 class DatabaseQualityReportBuilderIntegrationTest {
 
     @Test
