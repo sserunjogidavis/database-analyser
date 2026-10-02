@@ -18,7 +18,9 @@ The PostgreSQL implementation is functional and tested. It currently provides:
 - JSON, HTML, and CSV quality-report export;
 - Workbench-compatible Application Catalog export;
 - contract-aligned dependency semantics;
-- schema validation and automated integration testing; and
+- schema validation and automated integration testing;
+- configurable quality-analysis rules through environment variables and command-line overrides;
+- command-line runtime configuration for database connection settings and quality-analysis thresholds; and
 - automatic verification of the pinned Workbench contract during the Gradle `check` lifecycle.
 
 Detailed chronological documentation is available in [`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md).
@@ -85,7 +87,6 @@ DB_PASSWORD
 The database password is read from `DB_PASSWORD` and must not be committed to the repository.
 
 During development, PostgreSQL 16 is run in Docker and the analyser is tested against the `companydb` database.
-
 
 ## Reproducible Docker development database
 
@@ -430,7 +431,9 @@ The project contains unit and integration tests covering:
 - reproducible SQL fixture loading;
 - planted-defect assertions for NULL percentages, malformed emails, numeric outliers, duplicate records, future dates, and invalid foreign-key references;
 - multi-row grouped aggregate verification;
-- configurable quality-rule validation and integration behaviour; and
+- configurable quality-rule validation and integration behaviour;
+- command-line argument parsing;
+- runtime configuration resolution and command-line overrides; and
 - Workbench contract verification.
 
 Run the tests on Windows with:
@@ -446,7 +449,6 @@ Run the complete verification gate with:
 ```
 
 The latest completed verification passed successfully and verified the pinned Workbench Application Catalog contract.
-
 
 ## Reproducible database-quality integration fixture
 
@@ -565,6 +567,53 @@ From PowerShell:
 .\gradlew.bat run
 ```
 
+### Command-line configuration
+
+The analyser supports command-line overrides for database connection settings and quality-analysis thresholds.
+
+Supported options are:
+
+| Command-line option | Purpose |
+|---|---|
+| `--host` | PostgreSQL host |
+| `--port` | PostgreSQL port |
+| `--database` | PostgreSQL database name |
+| `--user` | PostgreSQL user |
+| `--null-warning-threshold` | NULL-percentage warning threshold |
+| `--null-critical-threshold` | NULL-percentage critical threshold |
+| `--outlier-zscore-threshold` | Modified z-score threshold for potential numeric-outlier detection |
+| `--outlier-min-sample-size` | Minimum number of values required before outlier analysis is performed |
+
+For example, database connection settings can be supplied through command-line arguments:
+
+```powershell
+.\gradlew.bat run --args="--host localhost --port 5432 --database companydb --user analyst"
+```
+
+Quality-analysis rules can also be overridden:
+
+```powershell
+.\gradlew.bat run --args="--null-warning-threshold 10 --null-critical-threshold 40 --outlier-zscore-threshold 4.5 --outlier-min-sample-size 3"
+```
+
+Configuration precedence is:
+
+```text
+Command-line option
+        ↓
+Environment variable
+        ↓
+Built-in default
+```
+
+This allows temporary command-line overrides without changing the normal environment configuration.
+
+`DB_PASSWORD` is intentionally not available as a command-line option. The database password must continue to be supplied through the `DB_PASSWORD` environment variable so that credentials are not unnecessarily exposed in command history or process arguments.
+
+Command-line input is parsed by `CommandLineConfig.kt`. `RuntimeConfig.kt` combines command-line overrides with the existing environment/default configuration before the database connection and quality analyser are created.
+
+The command-line configuration behaviour is covered by `CommandLineConfigTest.kt` and `RuntimeConfigTest.kt`.
+
 The application entry point is:
 
 ```text
@@ -586,6 +635,7 @@ Important files include:
 ```text
 ApplicationCatalog.kt
 ApplicationCatalogJsonExporter.kt
+CommandLineConfig.kt
 DatabaseAnalyzer.kt
 DatabaseCatalogBuilder.kt
 DatabaseConfig.kt
@@ -599,6 +649,7 @@ DatabaseQualityReportJsonExporter.kt
 PostgreSqlDatabaseAdapter.kt
 QualityFinding.kt
 QualityRules.kt
+RuntimeConfig.kt
 main.kt
 ```
 
@@ -606,6 +657,13 @@ Tests:
 
 ```text
 src/test/kotlin/com/alpinedigitalexperts/databaseanalyser/
+```
+
+Important command-line configuration tests include:
+
+```text
+CommandLineConfigTest.kt
+RuntimeConfigTest.kt
 ```
 
 Reproducible SQL test fixtures:
@@ -645,11 +703,13 @@ DB_PASSWORD
 
 is obtained from the environment.
 
+The command-line interface deliberately does not provide a password argument. Database passwords therefore remain environment-based rather than being passed as ordinary command-line arguments.
+
 Generated output, IDE files, build files, and local secret/environment files should remain excluded according to the repository's `.gitignore`.
 
 ## Future work
 
-The current PostgreSQL implementation provides the core metadata, dependency, quality-analysis, aggregate-analysis, reporting, and Application Catalog foundation.
+The current PostgreSQL implementation provides the core metadata, dependency, quality-analysis, aggregate-analysis, reporting, Application Catalog, configurable quality-rule, and command-line configuration foundation.
 
 Possible future extensions include:
 
@@ -658,7 +718,6 @@ Possible future extensions include:
 - inferred semantic relationship candidates;
 - privacy/PII classification with provenance and confidence;
 - additional database-engine adapters;
-- command-line configuration;
 - historical report comparison;
 - additional statistical analysis;
 - graphical reporting; and
