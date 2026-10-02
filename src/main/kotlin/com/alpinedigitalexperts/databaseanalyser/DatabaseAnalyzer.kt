@@ -1224,6 +1224,9 @@ class DatabaseAnalyzer(
                 columnName
             )
 
+        // TODO(@sserunjogidavis): 3 values is the bare minimum for MAD, not a meaningful
+        // sample. The 3-row test tables never exercise this path with a real outlier, so
+        // add fixtures with planted outliers (see DatabaseQualityReportBuilderIntegrationTest).
         if (nonNullCount < 3L) {
             return 0
         }
