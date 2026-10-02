@@ -2,14 +2,24 @@ package com.alpinedigitalexperts.databaseanalyser
 
 import java.nio.file.Path
 
-fun main() {
+fun main(args: Array<String>) {
 
     println("============================================================")
     println("DATABASE ANALYSER")
     println("============================================================")
     println()
 
-    DatabaseConnector.connect().use { connection ->
+    val commandLineConfig =
+        CommandLineConfig.parse(args)
+
+    val runtimeConfig =
+        RuntimeConfig.resolve(
+            commandLineConfig
+        )
+
+    DatabaseConnector.connect(
+        runtimeConfig
+    ).use { connection ->
 
         println("[OK] Database connected successfully.")
         println()
@@ -17,7 +27,7 @@ fun main() {
         val analyzer =
             DatabaseAnalyzer(
                 connection = connection,
-                qualityRules = DatabaseConfig.QUALITY_RULES
+                qualityRules = runtimeConfig.qualityRules
             )
 
         val reportBuilder =
