@@ -40,6 +40,26 @@ fun main(args: Array<String>) {
 
 
         // ========================================================
+        // HISTORICAL QUALITY COMPARISON
+        // ========================================================
+
+        val historicalComparison =
+            commandLineConfig.compareWith?.let { previousReportPath ->
+
+                val previousReport =
+                    DatabaseQualityReportJsonReader()
+                        .readFromFile(
+                            Path.of(previousReportPath)
+                        )
+
+                DatabaseQualityComparator.compare(
+                    previous = previousReport,
+                    current = report
+                )
+            }
+
+
+        // ========================================================
         // APPLICATION CATALOG
         // ========================================================
 
@@ -125,6 +145,29 @@ fun main(args: Array<String>) {
                 report = report,
                 outputPath = csvOutputPath
             )
+
+
+        // ========================================================
+        // HISTORICAL COMPARISON JSON EXPORT
+        // ========================================================
+
+        val writtenComparisonPath =
+            historicalComparison?.let { comparison ->
+
+                val comparisonExporter =
+                    DatabaseQualityComparisonJsonExporter()
+
+                val comparisonOutputPath =
+                    Path.of(
+                        "output",
+                        "database-quality-comparison.json"
+                    )
+
+                comparisonExporter.writeToFile(
+                    comparison = comparison,
+                    outputPath = comparisonOutputPath
+                )
+            }
 
 
         // ========================================================
@@ -1005,6 +1048,66 @@ fun main(args: Array<String>) {
 
 
         // ========================================================
+        // HISTORICAL QUALITY COMPARISON OUTPUT
+        // ========================================================
+
+        if (historicalComparison != null) {
+
+            println("============================================================")
+            println("HISTORICAL QUALITY COMPARISON")
+            println("============================================================")
+            println()
+
+            println(
+                "Previous Total Issues: " +
+                    historicalComparison.previousTotalIssues
+            )
+
+            println(
+                "Current Total Issues: " +
+                    historicalComparison.currentTotalIssues
+            )
+
+            println(
+                "Total Issue Change: " +
+                    historicalComparison.totalIssueChange
+            )
+
+            println(
+                "Previous Status: " +
+                    historicalComparison.previousStatus
+            )
+
+            println(
+                "Current Status: " +
+                    historicalComparison.currentStatus
+            )
+
+            println(
+                "Outcome: " +
+                    historicalComparison.outcome
+            )
+
+            println()
+
+            println("CATEGORY CHANGES")
+            println("------------------------------------------------------------")
+
+            for (change in historicalComparison.categoryChanges) {
+
+                println(
+                    "${change.category}: " +
+                        "${change.previousValue} -> " +
+                        "${change.currentValue} " +
+                        "(${change.change})"
+                )
+            }
+
+            println()
+        }
+
+
+        // ========================================================
         // EXPORTED REPORTS
         // ========================================================
 
@@ -1042,6 +1145,17 @@ fun main(args: Array<String>) {
                     .normalize()
             }"
         )
+
+        if (writtenComparisonPath != null) {
+
+            println(
+                "Historical Comparison JSON: ${
+                    writtenComparisonPath
+                        .toAbsolutePath()
+                        .normalize()
+                }"
+            )
+        }
 
         println()
 

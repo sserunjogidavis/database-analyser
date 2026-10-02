@@ -8,7 +8,8 @@ data class CommandLineConfig(
     val nullWarningThreshold: Double? = null,
     val nullCriticalThreshold: Double? = null,
     val outlierZScoreThreshold: Double? = null,
-    val outlierMinimumSampleSize: Long? = null
+    val outlierMinimumSampleSize: Long? = null,
+    val compareWith: String? = null
 ) {
 
     companion object {
@@ -25,6 +26,7 @@ data class CommandLineConfig(
             var nullCriticalThreshold: Double? = null
             var outlierZScoreThreshold: Double? = null
             var outlierMinimumSampleSize: Long? = null
+            var compareWith: String? = null
 
             var index = 0
 
@@ -148,6 +150,17 @@ data class CommandLineConfig(
                         index += 2
                     }
 
+                    "--compare-with" -> {
+                        compareWith =
+                            requireValue(
+                                args = args,
+                                index = index,
+                                optionName = argument
+                            )
+
+                        index += 2
+                    }
+
                     else -> {
                         error(
                             "Unknown command-line option: $argument"
@@ -164,7 +177,8 @@ data class CommandLineConfig(
                 nullWarningThreshold = nullWarningThreshold,
                 nullCriticalThreshold = nullCriticalThreshold,
                 outlierZScoreThreshold = outlierZScoreThreshold,
-                outlierMinimumSampleSize = outlierMinimumSampleSize
+                outlierMinimumSampleSize = outlierMinimumSampleSize,
+                compareWith = compareWith
             )
         }
 

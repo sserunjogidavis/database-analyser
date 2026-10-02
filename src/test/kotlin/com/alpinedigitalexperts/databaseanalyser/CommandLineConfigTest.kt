@@ -23,6 +23,7 @@ class CommandLineConfigTest {
         assertNull(config.nullCriticalThreshold)
         assertNull(config.outlierZScoreThreshold)
         assertNull(config.outlierMinimumSampleSize)
+        assertNull(config.compareWith)
     }
 
 
@@ -105,6 +106,56 @@ class CommandLineConfigTest {
 
 
     @Test
+    fun `parses historical comparison report path`() {
+
+        val config =
+            CommandLineConfig.parse(
+                arrayOf(
+                    "--compare-with",
+                    "output/previous-database-quality-report.json"
+                )
+            )
+
+        assertEquals(
+            "output/previous-database-quality-report.json",
+            config.compareWith
+        )
+    }
+
+
+    @Test
+    fun `parses comparison option with other command line options`() {
+
+        val config =
+            CommandLineConfig.parse(
+                arrayOf(
+                    "--host",
+                    "localhost",
+                    "--database",
+                    "companydb",
+                    "--compare-with",
+                    "history/baseline.json"
+                )
+            )
+
+        assertEquals(
+            "localhost",
+            config.host
+        )
+
+        assertEquals(
+            "companydb",
+            config.databaseName
+        )
+
+        assertEquals(
+            "history/baseline.json",
+            config.compareWith
+        )
+    }
+
+
+    @Test
     fun `rejects unknown command line option`() {
 
         assertFailsWith<IllegalStateException> {
@@ -127,6 +178,20 @@ class CommandLineConfigTest {
             CommandLineConfig.parse(
                 arrayOf(
                     "--host"
+                )
+            )
+        }
+    }
+
+
+    @Test
+    fun `rejects compare with option without value`() {
+
+        assertFailsWith<IllegalStateException> {
+
+            CommandLineConfig.parse(
+                arrayOf(
+                    "--compare-with"
                 )
             )
         }
