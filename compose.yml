@@ -23,6 +23,7 @@ services:
 
     volumes:
       - database_analyser_postgres_data:/var/lib/postgresql/data
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
 
 volumes:
   database_analyser_postgres_data:

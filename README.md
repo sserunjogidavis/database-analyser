@@ -129,7 +129,23 @@ docker compose down
 
 The Compose configuration uses a named Docker volume so PostgreSQL data can persist between normal container restarts.
 
-If a separately created container named `database-analyser-postgres` already exists, stop or remove that old container before starting the Compose-managed environment to avoid a container-name or port conflict.
+The repository also contains a base PostgreSQL initialization script at:
+
+```text
+docker/init/01-base-schema.sql
+```
+
+The `docker/init` directory is mounted read-only at `/docker-entrypoint-initdb.d`. PostgreSQL runs the initialization script when a new empty Compose data volume is initialized. The script creates and seeds the normal development objects used by the analyser and integration tests, including:
+
+```text
+public.departments
+public.employees
+reporting.monthly_sales
+```
+
+This fresh-database path has been verified end-to-end: a new Compose-managed PostgreSQL 16 database was initialized from the repository, the expected development tables and seed rows were present, `./gradlew.bat clean test` passed, and `./gradlew.bat check` passed while verifying the pinned Workbench Application Catalog contract.
+
+If a separately created container named `database-analyser-postgres` already exists, stop and rename or remove that old container before starting the Compose-managed environment to avoid a container-name or port conflict. Do not remove an old Docker data volume unless its data is no longer needed.
 
 ## Metadata discovery
 
@@ -570,10 +586,11 @@ Reproducible SQL test fixtures:
 src/test/resources/sql/
 ```
 
-Docker Compose environment:
+Docker Compose environment and base database initialization:
 
 ```text
 compose.yml
+docker/init/01-base-schema.sql
 ```
 
 Contract snapshot:
