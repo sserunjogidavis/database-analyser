@@ -26,4 +26,61 @@ object DatabaseConfig {
 
     val URL: String =
         "jdbc:postgresql://$HOST:$PORT/$DATABASE_NAME"
+
+
+    val QUALITY_RULES: QualityRules =
+        QualityRules(
+            highNullWarningThreshold =
+                environmentDouble(
+                    name = "QUALITY_NULL_WARNING_THRESHOLD",
+                    defaultValue = 20.0
+                ),
+            highNullCriticalThreshold =
+                environmentDouble(
+                    name = "QUALITY_NULL_CRITICAL_THRESHOLD",
+                    defaultValue = 50.0
+                ),
+            numericOutlierModifiedZScoreThreshold =
+                environmentDouble(
+                    name = "QUALITY_OUTLIER_ZSCORE_THRESHOLD",
+                    defaultValue = 3.5
+                ),
+            minimumValuesForOutlierAnalysis =
+                environmentLong(
+                    name = "QUALITY_OUTLIER_MIN_SAMPLE_SIZE",
+                    defaultValue = 3L
+                )
+        )
+
+
+    private fun environmentDouble(
+        name: String,
+        defaultValue: Double
+    ): Double {
+
+        val value =
+            System.getenv(name)
+                ?: return defaultValue
+
+        return value.toDoubleOrNull()
+            ?: error(
+                "$name must be a valid decimal number."
+            )
+    }
+
+
+    private fun environmentLong(
+        name: String,
+        defaultValue: Long
+    ): Long {
+
+        val value =
+            System.getenv(name)
+                ?: return defaultValue
+
+        return value.toLongOrNull()
+            ?: error(
+                "$name must be a valid whole number."
+            )
+    }
 }

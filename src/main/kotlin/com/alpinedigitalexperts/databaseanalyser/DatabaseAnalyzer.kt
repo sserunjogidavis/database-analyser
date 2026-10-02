@@ -6,7 +6,9 @@ import java.sql.Connection
 class DatabaseAnalyzer(
     private val connection: Connection,
     private val metadataAdapter: DatabaseMetadataAdapter =
-        PostgreSqlDatabaseAdapter(connection)
+        PostgreSqlDatabaseAdapter(connection),
+    private val qualityRules: QualityRules =
+        QualityRules()
 ) {
 
     // ============================================================
@@ -553,10 +555,12 @@ class DatabaseAnalyzer(
             nullPercentage == 0.0 ->
                 "[OK] No NULL values"
 
-            nullPercentage < 20.0 ->
+            nullPercentage <
+                qualityRules.highNullWarningThreshold ->
                 "[INFO] Some NULL values"
 
-            nullPercentage <= 50.0 ->
+            nullPercentage <=
+                qualityRules.highNullCriticalThreshold ->
                 "[WARNING] High NULL percentage"
 
             else ->
@@ -1224,7 +1228,10 @@ class DatabaseAnalyzer(
                 columnName
             )
 
-        if (nonNullCount < 3L) {
+        if (
+            nonNullCount <
+            qualityRules.minimumValuesForOutlierAnalysis
+        ) {
             return 0
         }
 
@@ -1280,7 +1287,7 @@ class DatabaseAnalyzer(
                       median_stats.median_value
                   ) /
                   mad_stats.mad_value
-              ) > 3.5
+              ) > ${qualityRules.numericOutlierModifiedZScoreThreshold}
         """.trimIndent()
 
         connection.prepareStatement(sql).use { statement ->

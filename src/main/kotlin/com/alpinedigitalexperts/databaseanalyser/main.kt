@@ -15,7 +15,10 @@ fun main() {
         println()
 
         val analyzer =
-            DatabaseAnalyzer(connection)
+            DatabaseAnalyzer(
+                connection = connection,
+                qualityRules = DatabaseConfig.QUALITY_RULES
+            )
 
         val reportBuilder =
             DatabaseQualityReportBuilder(
@@ -365,32 +368,14 @@ fun main() {
                     }%"
                 )
 
-                when {
-
-                    column.nullPercentage == 0.0 ->
-
-                        println(
-                            "    [OK] No NULL values"
+                println(
+                    "    " +
+                        analyzer.assessNullQuality(
+                            schemaName = table.schemaName,
+                            tableName = table.tableName,
+                            columnName = column.columnName
                         )
-
-                    column.nullPercentage < 20.0 ->
-
-                        println(
-                            "    [INFO] Some NULL values"
-                        )
-
-                    column.nullPercentage <= 50.0 ->
-
-                        println(
-                            "    [WARNING] High NULL percentage"
-                        )
-
-                    else ->
-
-                        println(
-                            "    [CRITICAL] Very high NULL percentage"
-                        )
-                }
+                )
             }
 
             println()
