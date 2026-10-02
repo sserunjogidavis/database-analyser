@@ -147,6 +147,32 @@ This fresh-database path has been verified end-to-end: a new Compose-managed Pos
 
 If a separately created container named `database-analyser-postgres` already exists, stop and rename or remove that old container before starting the Compose-managed environment to avoid a container-name or port conflict. Do not remove an old Docker data volume unless its data is no longer needed.
 
+## Configurable quality rules
+
+Quality-analysis thresholds can be configured through environment variables. If these variables are not set, the analyser uses defaults that preserve the standard analysis behaviour.
+
+| Environment variable | Default | Purpose |
+|---|---:|---|
+| `QUALITY_NULL_WARNING_THRESHOLD` | `20.0` | NULL percentage at which a column is reported as a high-NULL warning |
+| `QUALITY_NULL_CRITICAL_THRESHOLD` | `50.0` | NULL percentage above which a column is reported as critical |
+| `QUALITY_OUTLIER_ZSCORE_THRESHOLD` | `3.5` | Modified z-score threshold used for potential numeric-outlier detection |
+| `QUALITY_OUTLIER_MIN_SAMPLE_SIZE` | `3` | Minimum number of non-NULL numeric values required before outlier analysis is performed |
+
+The settings are represented by `QualityRules.kt`, validated when configuration is created, loaded from the environment by `DatabaseConfig.kt`, and supplied to `DatabaseAnalyzer`.
+
+Example PowerShell overrides:
+
+```powershell
+$env:QUALITY_NULL_WARNING_THRESHOLD = "30"
+$env:QUALITY_NULL_CRITICAL_THRESHOLD = "60"
+$env:QUALITY_OUTLIER_ZSCORE_THRESHOLD = "4.0"
+$env:QUALITY_OUTLIER_MIN_SAMPLE_SIZE = "5"
+
+.\gradlew.bat run
+```
+
+Invalid configuration values are rejected. If none of these variables is supplied, the defaults above are used.
+
 ## Metadata discovery
 
 The PostgreSQL metadata adapter discovers supported database objects including:
@@ -403,7 +429,8 @@ The project contains unit and integration tests covering:
 - overloaded routine dependency resolution;
 - reproducible SQL fixture loading;
 - planted-defect assertions for NULL percentages, malformed emails, numeric outliers, duplicate records, future dates, and invalid foreign-key references;
-- multi-row grouped aggregate verification; and
+- multi-row grouped aggregate verification;
+- configurable quality-rule validation and integration behaviour; and
 - Workbench contract verification.
 
 Run the tests on Windows with:
@@ -571,7 +598,8 @@ DatabaseQualityReportHtmlExporter.kt
 DatabaseQualityReportJsonExporter.kt
 PostgreSqlDatabaseAdapter.kt
 QualityFinding.kt
-Main.kt
+QualityRules.kt
+main.kt
 ```
 
 Tests:
@@ -630,12 +658,11 @@ Possible future extensions include:
 - inferred semantic relationship candidates;
 - privacy/PII classification with provenance and confidence;
 - additional database-engine adapters;
-- configurable quality rules;
 - command-line configuration;
 - historical report comparison;
 - additional statistical analysis;
 - graphical reporting; and
-- CI/CD integration.
+- additional CI/CD automation.
 
 Any future Application Catalog work must remain aligned with the pinned Workbench contract.
 
