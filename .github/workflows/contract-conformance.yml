@@ -1,4 +1,4 @@
-name: Contract conformance
+name: Database Analyser CI
 
 on:
   pull_request:
@@ -10,8 +10,31 @@ permissions:
   contents: read
 
 jobs:
-  verify-pinned-contract:
+  test-and-verify:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: companydb
+          POSTGRES_USER: analyst
+          POSTGRES_PASSWORD: ci-test-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U analyst -d companydb"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      DB_NAME: companydb
+      DB_USER: analyst
+      DB_PASSWORD: ci-test-password
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -25,5 +48,18 @@ jobs:
       - name: Verify Gradle Wrapper
         uses: gradle/actions/wrapper-validation@v4
 
-      - name: Verify pinned Workbench contract
+      - name: Initialize development database
+        env:
+          PGPASSWORD: ci-test-password
+        run: |
+          psql \
+            -h localhost \
+            -U analyst \
+            -d companydb \
+            -f docker/init/01-base-schema.sql
+
+      - name: Run clean test suite
+        run: ./gradlew clean test
+
+      - name: Run complete verification gate
         run: ./gradlew check
