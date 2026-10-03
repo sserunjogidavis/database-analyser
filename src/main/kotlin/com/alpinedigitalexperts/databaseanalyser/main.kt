@@ -1187,6 +1187,20 @@ fun main(args: Array<String>) {
             }
 
             println()
+
+            println("CATEGORY CHANGES")
+            println("------------------------------------------------------------")
+
+            for (change in historicalTrend.categoryChanges) {
+                println(
+                    "${change.category}: " +
+                        "${change.firstValue} -> " +
+                        "${change.latestValue} " +
+                        "(${change.change})"
+                )
+            }
+
+            println()
         }
 
 
@@ -1258,3 +1272,4 @@ fun main(args: Array<String>) {
         println("============================================================")
     }
 }
+

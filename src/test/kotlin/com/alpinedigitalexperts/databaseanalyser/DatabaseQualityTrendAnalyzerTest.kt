@@ -283,6 +283,272 @@ class DatabaseQualityTrendAnalyzerTest {
 
 
     @Test
+    fun `copies category issue counts into trend snapshots`() {
+
+        val reports =
+            listOf(
+                report(
+                    databaseName = "companydb",
+                    totalIssues = 13L,
+                    overallStatus =
+                        DatabaseQualityStatus.ATTENTION_REQUIRED,
+
+                    primaryKeyIssues = 1L,
+                    foreignKeyIssues = 2L,
+                    duplicateValueIssues = 3L,
+                    potentialDuplicateRecordIssues = 4L,
+                    emptyStringIssues = 5L,
+                    whitespaceOnlyIssues = 6L,
+                    leadingTrailingWhitespaceIssues = 7L,
+                    emailFormatIssues = 8L,
+                    numericAnomalyIssues = 9L,
+                    potentialNumericOutlierIssues = 10L,
+                    dateAnomalyIssues = 11L,
+                    constantValueIssues = 12L,
+                    highNullPercentageIssues = 13L
+                )
+            )
+
+        val trend =
+            DatabaseQualityTrendAnalyzer.analyze(
+                reports
+            )
+
+        val snapshot =
+            trend.snapshots.single()
+
+        assertEquals(
+            1L,
+            snapshot.primaryKeyIssues
+        )
+
+        assertEquals(
+            2L,
+            snapshot.foreignKeyIssues
+        )
+
+        assertEquals(
+            3L,
+            snapshot.duplicateValueIssues
+        )
+
+        assertEquals(
+            4L,
+            snapshot.potentialDuplicateRecordIssues
+        )
+
+        assertEquals(
+            5L,
+            snapshot.emptyStringIssues
+        )
+
+        assertEquals(
+            6L,
+            snapshot.whitespaceOnlyIssues
+        )
+
+        assertEquals(
+            7L,
+            snapshot.leadingTrailingWhitespaceIssues
+        )
+
+        assertEquals(
+            8L,
+            snapshot.emailFormatIssues
+        )
+
+        assertEquals(
+            9L,
+            snapshot.numericAnomalyIssues
+        )
+
+        assertEquals(
+            10L,
+            snapshot.potentialNumericOutlierIssues
+        )
+
+        assertEquals(
+            11L,
+            snapshot.dateAnomalyIssues
+        )
+
+        assertEquals(
+            12L,
+            snapshot.constantValueIssues
+        )
+
+        assertEquals(
+            13L,
+            snapshot.highNullPercentageIssues
+        )
+    }
+
+
+    @Test
+    fun `preserves category values independently across snapshots`() {
+
+        val reports =
+            listOf(
+                report(
+                    databaseName = "companydb",
+                    totalIssues = 4L,
+                    overallStatus =
+                        DatabaseQualityStatus.REVIEW,
+                    foreignKeyIssues = 3L,
+                    emailFormatIssues = 1L
+                ),
+                report(
+                    databaseName = "companydb",
+                    totalIssues = 2L,
+                    overallStatus =
+                        DatabaseQualityStatus.REVIEW,
+                    foreignKeyIssues = 0L,
+                    emailFormatIssues = 2L
+                )
+            )
+
+        val trend =
+            DatabaseQualityTrendAnalyzer.analyze(
+                reports
+            )
+
+        assertEquals(
+            3L,
+            trend.snapshots[0].foreignKeyIssues
+        )
+
+        assertEquals(
+            1L,
+            trend.snapshots[0].emailFormatIssues
+        )
+
+        assertEquals(
+            0L,
+            trend.snapshots[1].foreignKeyIssues
+        )
+
+        assertEquals(
+            2L,
+            trend.snapshots[1].emailFormatIssues
+        )
+    }
+
+
+    @Test
+    fun `calculates first to latest category changes`() {
+
+        val reports =
+            listOf(
+                report(
+                    databaseName = "companydb",
+                    totalIssues = 6L,
+                    overallStatus =
+                        DatabaseQualityStatus.REVIEW,
+
+                    primaryKeyIssues = 2L,
+                    foreignKeyIssues = 3L,
+                    emailFormatIssues = 1L
+                ),
+
+                report(
+                    databaseName = "companydb",
+                    totalIssues = 5L,
+                    overallStatus =
+                        DatabaseQualityStatus.REVIEW,
+
+                    primaryKeyIssues = 1L,
+                    foreignKeyIssues = 2L,
+                    emailFormatIssues = 2L
+                ),
+
+                report(
+                    databaseName = "companydb",
+                    totalIssues = 3L,
+                    overallStatus =
+                        DatabaseQualityStatus.REVIEW,
+
+                    primaryKeyIssues = 0L,
+                    foreignKeyIssues = 1L,
+                    emailFormatIssues = 2L
+                )
+            )
+
+        val trend =
+            DatabaseQualityTrendAnalyzer.analyze(
+                reports
+            )
+
+        assertEquals(
+            13,
+            trend.categoryChanges.size
+        )
+
+
+        val primaryKeyChange =
+            trend.categoryChanges.single {
+                it.category == "Primary Key Issues"
+            }
+
+        assertEquals(
+            2L,
+            primaryKeyChange.firstValue
+        )
+
+        assertEquals(
+            0L,
+            primaryKeyChange.latestValue
+        )
+
+        assertEquals(
+            -2L,
+            primaryKeyChange.change
+        )
+
+
+        val foreignKeyChange =
+            trend.categoryChanges.single {
+                it.category == "Foreign Key Issues"
+            }
+
+        assertEquals(
+            3L,
+            foreignKeyChange.firstValue
+        )
+
+        assertEquals(
+            1L,
+            foreignKeyChange.latestValue
+        )
+
+        assertEquals(
+            -2L,
+            foreignKeyChange.change
+        )
+
+
+        val emailChange =
+            trend.categoryChanges.single {
+                it.category == "Email Format Issues"
+            }
+
+        assertEquals(
+            1L,
+            emailChange.firstValue
+        )
+
+        assertEquals(
+            2L,
+            emailChange.latestValue
+        )
+
+        assertEquals(
+            1L,
+            emailChange.change
+        )
+    }
+
+
+    @Test
     fun `rejects empty report list`() {
 
         assertFailsWith<IllegalArgumentException> {
@@ -325,7 +591,21 @@ class DatabaseQualityTrendAnalyzerTest {
     private fun report(
         databaseName: String,
         totalIssues: Long,
-        overallStatus: DatabaseQualityStatus
+        overallStatus: DatabaseQualityStatus,
+
+        primaryKeyIssues: Long = 0L,
+        foreignKeyIssues: Long = 0L,
+        duplicateValueIssues: Long = 0L,
+        potentialDuplicateRecordIssues: Long = 0L,
+        emptyStringIssues: Long = 0L,
+        whitespaceOnlyIssues: Long = 0L,
+        leadingTrailingWhitespaceIssues: Long = 0L,
+        emailFormatIssues: Long = 0L,
+        numericAnomalyIssues: Long = 0L,
+        potentialNumericOutlierIssues: Long = 0L,
+        dateAnomalyIssues: Long = 0L,
+        constantValueIssues: Long = 0L,
+        highNullPercentageIssues: Long = 0L
     ): DatabaseQualityReport {
 
         return DatabaseQualityReport(
@@ -337,21 +617,47 @@ class DatabaseQualityTrendAnalyzerTest {
                     columnsAnalysed = 0,
                     rowsAnalysed = 0L,
 
-                    primaryKeyIssues = 0L,
-                    foreignKeyIssues = 0L,
-                    duplicateValueIssues = 0L,
-                    potentialDuplicateRecordIssues = 0L,
-                    emptyStringIssues = 0L,
-                    whitespaceOnlyIssues = 0L,
-                    leadingTrailingWhitespaceIssues = 0L,
-                    emailFormatIssues = 0L,
-                    numericAnomalyIssues = 0L,
-                    potentialNumericOutlierIssues = 0L,
-                    dateAnomalyIssues = 0L,
-                    constantValueIssues = 0L,
-                    highNullPercentageIssues = 0L,
+                    primaryKeyIssues =
+                        primaryKeyIssues,
 
-                    totalIssues = totalIssues,
+                    foreignKeyIssues =
+                        foreignKeyIssues,
+
+                    duplicateValueIssues =
+                        duplicateValueIssues,
+
+                    potentialDuplicateRecordIssues =
+                        potentialDuplicateRecordIssues,
+
+                    emptyStringIssues =
+                        emptyStringIssues,
+
+                    whitespaceOnlyIssues =
+                        whitespaceOnlyIssues,
+
+                    leadingTrailingWhitespaceIssues =
+                        leadingTrailingWhitespaceIssues,
+
+                    emailFormatIssues =
+                        emailFormatIssues,
+
+                    numericAnomalyIssues =
+                        numericAnomalyIssues,
+
+                    potentialNumericOutlierIssues =
+                        potentialNumericOutlierIssues,
+
+                    dateAnomalyIssues =
+                        dateAnomalyIssues,
+
+                    constantValueIssues =
+                        constantValueIssues,
+
+                    highNullPercentageIssues =
+                        highNullPercentageIssues,
+
+                    totalIssues =
+                        totalIssues,
 
                     overallStatus =
                         overallStatus

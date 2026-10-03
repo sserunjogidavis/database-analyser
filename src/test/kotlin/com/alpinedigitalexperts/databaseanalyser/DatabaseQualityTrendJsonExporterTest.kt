@@ -62,6 +62,54 @@ class DatabaseQualityTrendJsonExporterTest {
                 "\"sequence\": 3"
             )
         )
+
+        assertTrue(
+            json.contains(
+                "\"primaryKeyIssues\": 2"
+            )
+        )
+
+        assertTrue(
+            json.contains(
+                "\"foreignKeyIssues\": 1"
+            )
+        )
+
+        assertTrue(
+            json.contains(
+                "\"emailFormatIssues\": 1"
+            )
+        )
+
+        assertTrue(
+            json.contains(
+                "\"constantValueIssues\": 1"
+            )
+        )
+
+        assertTrue(
+            json.contains(
+                "\"category\": \"Primary Key Issues\""
+            )
+        )
+
+        assertTrue(
+            json.contains(
+                "\"firstValue\": 2"
+            )
+        )
+
+        assertTrue(
+            json.contains(
+                "\"latestValue\": 0"
+            )
+        )
+
+        assertTrue(
+            json.contains(
+                "\"change\": -2"
+            )
+        )
     }
 
 
@@ -117,6 +165,18 @@ class DatabaseQualityTrendJsonExporterTest {
             assertTrue(
                 content.contains(
                     "\"outcome\": \"IMPROVING\""
+                )
+            )
+
+            assertTrue(
+                content.contains(
+                    "\"category\": \"Foreign Key Issues\""
+                )
+            )
+
+            assertTrue(
+                content.contains(
+                    "\"change\": -1"
                 )
             )
 
@@ -194,23 +254,67 @@ class DatabaseQualityTrendJsonExporterTest {
 
             snapshots =
                 listOf(
-                    DatabaseQualityTrendSnapshot(
+                    snapshot(
                         sequence = 1,
                         totalIssues = 8L,
                         overallStatus =
-                            DatabaseQualityStatus.ATTENTION_REQUIRED
+                            DatabaseQualityStatus.ATTENTION_REQUIRED,
+
+                        primaryKeyIssues = 2L,
+                        foreignKeyIssues = 1L,
+                        duplicateValueIssues = 1L,
+                        potentialDuplicateRecordIssues = 1L,
+                        emptyStringIssues = 1L,
+                        whitespaceOnlyIssues = 0L,
+                        leadingTrailingWhitespaceIssues = 0L,
+                        emailFormatIssues = 1L,
+                        numericAnomalyIssues = 0L,
+                        potentialNumericOutlierIssues = 0L,
+                        dateAnomalyIssues = 0L,
+                        constantValueIssues = 1L,
+                        highNullPercentageIssues = 0L
                     ),
-                    DatabaseQualityTrendSnapshot(
+
+                    snapshot(
                         sequence = 2,
                         totalIssues = 5L,
                         overallStatus =
-                            DatabaseQualityStatus.REVIEW
+                            DatabaseQualityStatus.REVIEW,
+
+                        primaryKeyIssues = 1L,
+                        foreignKeyIssues = 1L,
+                        duplicateValueIssues = 1L,
+                        potentialDuplicateRecordIssues = 0L,
+                        emptyStringIssues = 1L,
+                        whitespaceOnlyIssues = 0L,
+                        leadingTrailingWhitespaceIssues = 0L,
+                        emailFormatIssues = 1L,
+                        numericAnomalyIssues = 0L,
+                        potentialNumericOutlierIssues = 0L,
+                        dateAnomalyIssues = 0L,
+                        constantValueIssues = 0L,
+                        highNullPercentageIssues = 0L
                     ),
-                    DatabaseQualityTrendSnapshot(
+
+                    snapshot(
                         sequence = 3,
                         totalIssues = 2L,
                         overallStatus =
-                            DatabaseQualityStatus.REVIEW
+                            DatabaseQualityStatus.REVIEW,
+
+                        primaryKeyIssues = 0L,
+                        foreignKeyIssues = 0L,
+                        duplicateValueIssues = 0L,
+                        potentialDuplicateRecordIssues = 0L,
+                        emptyStringIssues = 0L,
+                        whitespaceOnlyIssues = 0L,
+                        leadingTrailingWhitespaceIssues = 0L,
+                        emailFormatIssues = 1L,
+                        numericAnomalyIssues = 0L,
+                        potentialNumericOutlierIssues = 0L,
+                        dateAnomalyIssues = 0L,
+                        constantValueIssues = 1L,
+                        highNullPercentageIssues = 0L
                     )
                 ),
 
@@ -225,7 +329,136 @@ class DatabaseQualityTrendJsonExporterTest {
                 DatabaseQualityStatus.REVIEW,
 
             outcome =
-                DatabaseQualityTrendOutcome.IMPROVING
+                DatabaseQualityTrendOutcome.IMPROVING,
+
+            categoryChanges =
+                listOf(
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Primary Key Issues",
+                        firstValue = 2L,
+                        latestValue = 0L,
+                        change = -2L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Foreign Key Issues",
+                        firstValue = 1L,
+                        latestValue = 0L,
+                        change = -1L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Duplicate Value Issues",
+                        firstValue = 1L,
+                        latestValue = 0L,
+                        change = -1L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Potential Duplicate Record Issues",
+                        firstValue = 1L,
+                        latestValue = 0L,
+                        change = -1L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Empty String Issues",
+                        firstValue = 1L,
+                        latestValue = 0L,
+                        change = -1L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Whitespace-Only Issues",
+                        firstValue = 0L,
+                        latestValue = 0L,
+                        change = 0L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Leading/Trailing Whitespace Issues",
+                        firstValue = 0L,
+                        latestValue = 0L,
+                        change = 0L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Email Format Issues",
+                        firstValue = 1L,
+                        latestValue = 1L,
+                        change = 0L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Numeric Anomaly Issues",
+                        firstValue = 0L,
+                        latestValue = 0L,
+                        change = 0L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Potential Numeric Outlier Issues",
+                        firstValue = 0L,
+                        latestValue = 0L,
+                        change = 0L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Date Anomaly Issues",
+                        firstValue = 0L,
+                        latestValue = 0L,
+                        change = 0L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "Constant Value Issues",
+                        firstValue = 1L,
+                        latestValue = 1L,
+                        change = 0L
+                    ),
+                    DatabaseQualityTrendCategoryChange(
+                        category = "High NULL Percentage Issues",
+                        firstValue = 0L,
+                        latestValue = 0L,
+                        change = 0L
+                    )
+                )
+        )
+    }
+
+
+    private fun snapshot(
+        sequence: Int,
+        totalIssues: Long,
+        overallStatus: DatabaseQualityStatus,
+
+        primaryKeyIssues: Long,
+        foreignKeyIssues: Long,
+        duplicateValueIssues: Long,
+        potentialDuplicateRecordIssues: Long,
+        emptyStringIssues: Long,
+        whitespaceOnlyIssues: Long,
+        leadingTrailingWhitespaceIssues: Long,
+        emailFormatIssues: Long,
+        numericAnomalyIssues: Long,
+        potentialNumericOutlierIssues: Long,
+        dateAnomalyIssues: Long,
+        constantValueIssues: Long,
+        highNullPercentageIssues: Long
+    ): DatabaseQualityTrendSnapshot {
+
+        return DatabaseQualityTrendSnapshot(
+            sequence = sequence,
+
+            totalIssues = totalIssues,
+            overallStatus = overallStatus,
+
+            primaryKeyIssues = primaryKeyIssues,
+            foreignKeyIssues = foreignKeyIssues,
+            duplicateValueIssues = duplicateValueIssues,
+            potentialDuplicateRecordIssues =
+                potentialDuplicateRecordIssues,
+            emptyStringIssues = emptyStringIssues,
+            whitespaceOnlyIssues = whitespaceOnlyIssues,
+            leadingTrailingWhitespaceIssues =
+                leadingTrailingWhitespaceIssues,
+            emailFormatIssues = emailFormatIssues,
+            numericAnomalyIssues = numericAnomalyIssues,
+            potentialNumericOutlierIssues =
+                potentialNumericOutlierIssues,
+            dateAnomalyIssues = dateAnomalyIssues,
+            constantValueIssues = constantValueIssues,
+            highNullPercentageIssues =
+                highNullPercentageIssues
         )
     }
 }
