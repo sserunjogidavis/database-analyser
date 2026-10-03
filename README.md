@@ -17,7 +17,7 @@ The PostgreSQL implementation is functional and tested. It currently provides:
 - configurable quality-analysis rules through environment variables and command-line overrides;
 - command-line runtime configuration for database connection settings and quality-analysis thresholds;
 - historical database-quality report comparison with category-level change tracking and JSON export;
-- multi-snapshot historical quality trend analysis with JSON export; and
+- multi-snapshot historical quality trend analysis with per-snapshot category history, first-to-latest category change tracking, console output, and JSON export; and
 - automatic verification of the pinned Workbench contract during the Gradle check lifecycle.
   Detailed chronological documentation is available in [`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md).
   Technology stack
@@ -267,7 +267,7 @@ Application Catalog relationships use contract-aligned semantics. In particular:
 - runtime configuration resolution and command-line overrides;
 - historical quality-report comparison;
 - historical quality-report JSON reading and comparison JSON export;
-- multi-snapshot historical quality-trend analysis and trend JSON export; and
+- multi-snapshot historical quality-trend analysis, per-snapshot category tracking, first-to-latest category changes, and trend JSON export; and
 - Workbench contract verification.
   Run the tests on Windows with:
   .\gradlew.bat test
@@ -358,7 +358,7 @@ Historical trend analysis can use multiple previously exported reports. Supply -
 .\gradlew.bat run --args="--trend-with output\trend-report-1.json --trend-with output\trend-report-2.json"
 The current run is automatically appended as the latest snapshot. The application prints a HISTORICAL QUALITY TREND section and writes:
 output/database-quality-trend.json
-The trend is classified as IMPROVING when the latest total issue count is lower than the first snapshot, WORSENING when it is higher, and STABLE when the first and latest totals are equal. Intermediate snapshots are retained in order so the history can be inspected even when the first and latest totals are equal. --compare-with and --trend-with can be used together in the same run.
+The trend is classified as IMPROVING when the latest total issue count is lower than the first snapshot, WORSENING when it is higher, and STABLE when the first and latest totals are equal. Intermediate snapshots are retained in order so the history can be inspected even when the first and latest totals are equal. Each snapshot retains all 13 quality-category issue counts. The trend also calculates first-to-latest changes for each category, prints those category changes in the console, and includes them in output/database-quality-trend.json. The overall IMPROVING, WORSENING, or STABLE classification continues to depend only on the first and latest total issue counts; individual category changes do not override that classification. --compare-with and --trend-with can be used together in the same run.
 
 Configuration precedence is:
 Command-line option
@@ -434,7 +434,7 @@ Possible future extensions include:
 - inferred semantic relationship candidates;
 - privacy/PII classification with provenance and confidence;
 - additional database-engine adapters;
-- richer historical trend analysis, including category-level trends and visualization;
+- richer historical trend analysis, including snapshot timestamps, source-report provenance, and visualization;
 - additional statistical analysis;
 - graphical reporting; and
 - additional CI/CD automation.
