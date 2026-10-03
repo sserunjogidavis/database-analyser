@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class CommandLineConfigTest {
 
@@ -24,6 +25,10 @@ class CommandLineConfigTest {
         assertNull(config.outlierZScoreThreshold)
         assertNull(config.outlierMinimumSampleSize)
         assertNull(config.compareWith)
+
+        assertTrue(
+            config.trendWith.isEmpty()
+        )
     }
 
 
@@ -156,6 +161,119 @@ class CommandLineConfigTest {
 
 
     @Test
+    fun `parses single trend report path`() {
+
+        val config =
+            CommandLineConfig.parse(
+                arrayOf(
+                    "--trend-with",
+                    "history/report-1.json"
+                )
+            )
+
+        assertEquals(
+            listOf(
+                "history/report-1.json"
+            ),
+            config.trendWith
+        )
+    }
+
+
+    @Test
+    fun `parses repeated trend report paths in order`() {
+
+        val config =
+            CommandLineConfig.parse(
+                arrayOf(
+                    "--trend-with",
+                    "history/report-1.json",
+                    "--trend-with",
+                    "history/report-2.json",
+                    "--trend-with",
+                    "history/report-3.json"
+                )
+            )
+
+        assertEquals(
+            listOf(
+                "history/report-1.json",
+                "history/report-2.json",
+                "history/report-3.json"
+            ),
+            config.trendWith
+        )
+    }
+
+
+    @Test
+    fun `parses trend option with other command line options`() {
+
+        val config =
+            CommandLineConfig.parse(
+                arrayOf(
+                    "--host",
+                    "localhost",
+                    "--trend-with",
+                    "history/report-1.json",
+                    "--database",
+                    "companydb",
+                    "--trend-with",
+                    "history/report-2.json"
+                )
+            )
+
+        assertEquals(
+            "localhost",
+            config.host
+        )
+
+        assertEquals(
+            "companydb",
+            config.databaseName
+        )
+
+        assertEquals(
+            listOf(
+                "history/report-1.json",
+                "history/report-2.json"
+            ),
+            config.trendWith
+        )
+    }
+
+
+    @Test
+    fun `parses comparison and trend options together`() {
+
+        val config =
+            CommandLineConfig.parse(
+                arrayOf(
+                    "--compare-with",
+                    "history/baseline.json",
+                    "--trend-with",
+                    "history/report-1.json",
+                    "--trend-with",
+                    "history/report-2.json"
+                )
+            )
+
+        assertEquals(
+            "history/baseline.json",
+            config.compareWith
+        )
+
+        assertEquals(
+            listOf(
+                "history/report-1.json",
+                "history/report-2.json"
+            ),
+            config.trendWith
+        )
+    }
+
+
+    @Test
     fun `rejects unknown command line option`() {
 
         assertFailsWith<IllegalStateException> {
@@ -192,6 +310,20 @@ class CommandLineConfigTest {
             CommandLineConfig.parse(
                 arrayOf(
                     "--compare-with"
+                )
+            )
+        }
+    }
+
+
+    @Test
+    fun `rejects trend with option without value`() {
+
+        assertFailsWith<IllegalStateException> {
+
+            CommandLineConfig.parse(
+                arrayOf(
+                    "--trend-with"
                 )
             )
         }

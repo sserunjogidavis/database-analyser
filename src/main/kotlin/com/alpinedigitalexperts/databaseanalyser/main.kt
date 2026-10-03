@@ -60,6 +60,32 @@ fun main(args: Array<String>) {
 
 
         // ========================================================
+        // HISTORICAL QUALITY TREND
+        // ========================================================
+
+        val historicalTrend =
+            if (commandLineConfig.trendWith.isNotEmpty()) {
+
+                val historicalReports =
+                    commandLineConfig.trendWith.map { reportPath ->
+
+                        DatabaseQualityReportJsonReader()
+                            .readFromFile(
+                                Path.of(reportPath)
+                            )
+                    }
+
+                DatabaseQualityTrendAnalyzer.analyze(
+                    historicalReports + report
+                )
+
+            } else {
+
+                null
+            }
+
+
+        // ========================================================
         // APPLICATION CATALOG
         // ========================================================
 
@@ -166,6 +192,29 @@ fun main(args: Array<String>) {
                 comparisonExporter.writeToFile(
                     comparison = comparison,
                     outputPath = comparisonOutputPath
+                )
+            }
+
+
+        // ========================================================
+        // HISTORICAL TREND JSON EXPORT
+        // ========================================================
+
+        val writtenTrendPath =
+            historicalTrend?.let { trend ->
+
+                val trendExporter =
+                    DatabaseQualityTrendJsonExporter()
+
+                val trendOutputPath =
+                    Path.of(
+                        "output",
+                        "database-quality-trend.json"
+                    )
+
+                trendExporter.writeToFile(
+                    trend = trend,
+                    outputPath = trendOutputPath
                 )
             }
 
@@ -1108,6 +1157,40 @@ fun main(args: Array<String>) {
 
 
         // ========================================================
+        // HISTORICAL QUALITY TREND OUTPUT
+        // ========================================================
+
+        if (historicalTrend != null) {
+
+            println("============================================================")
+            println("HISTORICAL QUALITY TREND")
+            println("============================================================")
+            println()
+
+            println("First Total Issues: ${historicalTrend.firstTotalIssues}")
+            println("Latest Total Issues: ${historicalTrend.latestTotalIssues}")
+            println("Total Issue Change: ${historicalTrend.totalIssueChange}")
+            println("First Status: ${historicalTrend.firstStatus}")
+            println("Latest Status: ${historicalTrend.latestStatus}")
+            println("Outcome: ${historicalTrend.outcome}")
+            println()
+
+            println("SNAPSHOTS")
+            println("------------------------------------------------------------")
+
+            for (snapshot in historicalTrend.snapshots) {
+                println(
+                    "Snapshot ${snapshot.sequence}: " +
+                        "Total Issues = ${snapshot.totalIssues}, " +
+                        "Status = ${snapshot.overallStatus}"
+                )
+            }
+
+            println()
+        }
+
+
+        // ========================================================
         // EXPORTED REPORTS
         // ========================================================
 
@@ -1151,6 +1234,17 @@ fun main(args: Array<String>) {
             println(
                 "Historical Comparison JSON: ${
                     writtenComparisonPath
+                        .toAbsolutePath()
+                        .normalize()
+                }"
+            )
+        }
+
+        if (writtenTrendPath != null) {
+
+            println(
+                "Historical Trend JSON: ${
+                    writtenTrendPath
                         .toAbsolutePath()
                         .normalize()
                 }"

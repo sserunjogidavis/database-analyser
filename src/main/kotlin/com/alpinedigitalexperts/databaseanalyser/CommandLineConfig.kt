@@ -9,7 +9,8 @@ data class CommandLineConfig(
     val nullCriticalThreshold: Double? = null,
     val outlierZScoreThreshold: Double? = null,
     val outlierMinimumSampleSize: Long? = null,
-    val compareWith: String? = null
+    val compareWith: String? = null,
+    val trendWith: List<String> = emptyList()
 ) {
 
     companion object {
@@ -27,6 +28,9 @@ data class CommandLineConfig(
             var outlierZScoreThreshold: Double? = null
             var outlierMinimumSampleSize: Long? = null
             var compareWith: String? = null
+
+            val trendWith =
+                mutableListOf<String>()
 
             var index = 0
 
@@ -161,6 +165,17 @@ data class CommandLineConfig(
                         index += 2
                     }
 
+                    "--trend-with" -> {
+                        trendWith +=
+                            requireValue(
+                                args = args,
+                                index = index,
+                                optionName = argument
+                            )
+
+                        index += 2
+                    }
+
                     else -> {
                         error(
                             "Unknown command-line option: $argument"
@@ -178,7 +193,8 @@ data class CommandLineConfig(
                 nullCriticalThreshold = nullCriticalThreshold,
                 outlierZScoreThreshold = outlierZScoreThreshold,
                 outlierMinimumSampleSize = outlierMinimumSampleSize,
-                compareWith = compareWith
+                compareWith = compareWith,
+                trendWith = trendWith.toList()
             )
         }
 
