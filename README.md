@@ -16,21 +16,22 @@ The PostgreSQL implementation is functional and tested. It currently provides:
 - schema validation and automated integration testing;
 - configurable quality-analysis rules through environment variables and command-line overrides;
 - command-line runtime configuration for database connection settings and quality-analysis thresholds;
-- historical database-quality report comparison with category-level change tracking and JSON export; and
+- historical database-quality report comparison with category-level change tracking and JSON export;
+- multi-snapshot historical quality trend analysis with JSON export; and
 - automatic verification of the pinned Workbench contract during the Gradle check lifecycle.
   Detailed chronological documentation is available in [`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md).
   Technology stack
-  Technology	Purpose
-  Kotlin	Main implementation language
-  JDK 21	Java runtime baseline
-  Gradle Kotlin DSL	Build and dependency management
-  PostgreSQL	Current supported database engine
-  JDBC	Database connectivity
-  Docker	Local PostgreSQL development environment
-  Kotlin Serialization	JSON serialization
-  Kotlin Test / JUnit	Automated testing
-  NetworkNT JSON Schema Validator	Application Catalog schema validation
-  Git / GitHub	Version control and repository hosting
+  Technology    Purpose
+  Kotlin    Main implementation language
+  JDK 21    Java runtime baseline
+  Gradle Kotlin DSL Build and dependency management
+  PostgreSQL    Current supported database engine
+  JDBC  Database connectivity
+  Docker    Local PostgreSQL development environment
+  Kotlin Serialization  JSON serialization
+  Kotlin Test / JUnit   Automated testing
+  NetworkNT JSON Schema Validator   Application Catalog schema validation
+  Git / GitHub  Version control and repository hosting
 
 
 Pinned Application Catalog contract
@@ -85,11 +86,11 @@ Important contract files include:
   If a separately created container named database-analyser-postgres already exists, stop and rename or remove that old container before starting the Compose-managed environment to avoid a container-name or port conflict. Do not remove an old Docker data volume unless its data is no longer needed.
   Configurable quality rules
   Quality-analysis thresholds can be configured through environment variables. If these variables are not set, the analyser uses defaults that preserve the standard analysis behaviour.
-  Environment variable	Default	Purpose
-  QUALITY_NULL_WARNING_THRESHOLD	20.0	NULL percentage at which a column is reported as a high-NULL warning
-  QUALITY_NULL_CRITICAL_THRESHOLD	50.0	NULL percentage above which a column is reported as critical
-  QUALITY_OUTLIER_ZSCORE_THRESHOLD	3.5	Modified z-score threshold used for potential numeric-outlier detection
-  QUALITY_OUTLIER_MIN_SAMPLE_SIZE	3	Minimum number of non-NULL numeric values required before outlier analysis is performed
+  Environment variable  Default    Purpose
+  QUALITY_NULL_WARNING_THRESHOLD    20.0   NULL percentage at which a column is reported as a high-NULL warning
+  QUALITY_NULL_CRITICAL_THRESHOLD   50.0   NULL percentage above which a column is reported as critical
+  QUALITY_OUTLIER_ZSCORE_THRESHOLD  3.5    Modified z-score threshold used for potential numeric-outlier detection
+  QUALITY_OUTLIER_MIN_SAMPLE_SIZE   3  Minimum number of non-NULL numeric values required before outlier analysis is performed
 
 
 The settings are represented by QualityRules.kt, validated when configuration is created, loaded from the environment by DatabaseConfig.kt, and supplied to DatabaseAnalyzer.
@@ -265,7 +266,8 @@ Application Catalog relationships use contract-aligned semantics. In particular:
 - command-line argument parsing;
 - runtime configuration resolution and command-line overrides;
 - historical quality-report comparison;
-- historical quality-report JSON reading and comparison JSON export; and
+- historical quality-report JSON reading and comparison JSON export;
+- multi-snapshot historical quality-trend analysis and trend JSON export; and
 - Workbench contract verification.
   Run the tests on Windows with:
   .\gradlew.bat test
@@ -329,16 +331,17 @@ Application Catalog relationships use contract-aligned semantics. In particular:
    Command-line configuration
    The analyser supports command-line overrides for database connection settings and quality-analysis thresholds.
    Supported options are:
-   Command-line option	Purpose
-   --host	PostgreSQL host
-   --port	PostgreSQL port
-   --database	PostgreSQL database name
-   --user	PostgreSQL user
-   --null-warning-threshold	NULL-percentage warning threshold
-   --null-critical-threshold	NULL-percentage critical threshold
-   --outlier-zscore-threshold	Modified z-score threshold for potential numeric-outlier detection
-   --outlier-min-sample-size	Minimum number of values required before outlier analysis is performed
-   --compare-with	Path to a previous database-quality JSON report to compare with the current run
+   Command-line option  Purpose
+   --host   PostgreSQL host
+   --port   PostgreSQL port
+   --database   PostgreSQL database name
+   --user   PostgreSQL user
+   --null-warning-threshold NULL-percentage warning threshold
+   --null-critical-threshold    NULL-percentage critical threshold
+   --outlier-zscore-threshold   Modified z-score threshold for potential numeric-outlier detection
+   --outlier-min-sample-size    Minimum number of values required before outlier analysis is performed
+   --compare-with   Path to a previous database-quality JSON report to compare with the current run
+   --trend-with   Path to a historical database-quality JSON report for trend analysis; repeat the option to supply multiple snapshots in chronological order
 
 
 For example, database connection settings can be supplied through command-line arguments:
@@ -350,6 +353,13 @@ A current run can be compared with a previously exported JSON quality report:
 When comparison is enabled, the application prints a historical quality comparison to the console and writes:
 output/database-quality-comparison.json
 The comparison is classified as IMPROVED when the current total issue count is lower, REGRESSED when it is higher, and UNCHANGED when the total issue count is the same. Category-level changes are included so individual issue categories can also be inspected.
+
+Historical trend analysis can use multiple previously exported reports. Supply --trend-with once for each historical report, in chronological order:
+.\gradlew.bat run --args="--trend-with output\trend-report-1.json --trend-with output\trend-report-2.json"
+The current run is automatically appended as the latest snapshot. The application prints a HISTORICAL QUALITY TREND section and writes:
+output/database-quality-trend.json
+The trend is classified as IMPROVING when the latest total issue count is lower than the first snapshot, WORSENING when it is higher, and STABLE when the first and latest totals are equal. Intermediate snapshots are retained in order so the history can be inspected even when the first and latest totals are equal. --compare-with and --trend-with can be used together in the same run.
+
 Configuration precedence is:
 Command-line option
 ↓
@@ -377,6 +387,8 @@ DatabaseConnector.kt
 DatabaseMetadataAdapter.kt
 DatabaseQualityComparison.kt
 DatabaseQualityComparisonJsonExporter.kt
+DatabaseQualityTrend.kt
+DatabaseQualityTrendJsonExporter.kt
 DatabaseQualityReport.kt
 DatabaseQualityReportBuilder.kt
 DatabaseQualityReportCsvExporter.kt
@@ -390,12 +402,14 @@ RuntimeConfig.kt
 main.kt
 Tests:
 src/test/kotlin/com/alpinedigitalexperts/databaseanalyser/
-Important command-line configuration and historical-comparison tests include:
+Important command-line configuration, historical-comparison, and historical-trend tests include:
 CommandLineConfigTest.kt
 RuntimeConfigTest.kt
 DatabaseQualityComparatorTest.kt
 DatabaseQualityComparisonJsonExporterTest.kt
 DatabaseQualityReportJsonReaderTest.kt
+DatabaseQualityTrendAnalyzerTest.kt
+DatabaseQualityTrendJsonExporterTest.kt
 Reproducible SQL test fixtures:
 src/test/resources/sql/
 Docker Compose environment and base database initialization:
@@ -413,14 +427,14 @@ is obtained from the environment.
 The command-line interface deliberately does not provide a password argument. Database passwords therefore remain environment-based rather than being passed as ordinary command-line arguments.
 Generated output, IDE files, build files, and local secret/environment files should remain excluded according to the repository's .gitignore.
 Future work
-The current PostgreSQL implementation provides the core metadata, dependency, quality-analysis, aggregate-analysis, reporting, Application Catalog, configurable quality-rule, command-line configuration, and historical quality-report comparison foundation.
+The current PostgreSQL implementation provides the core metadata, dependency, quality-analysis, aggregate-analysis, reporting, Application Catalog, configurable quality-rule, command-line configuration, historical quality-report comparison, and multi-snapshot historical trend-analysis foundation.
 Possible future extensions include:
 - proving more precise routine access modes such as readsData, writesData, createsData, and deletesData where PostgreSQL evidence permits;
 - triggers, jobs, schedules, tasks, synonyms, queues, and other supported database objects;
 - inferred semantic relationship candidates;
 - privacy/PII classification with provenance and confidence;
 - additional database-engine adapters;
-- additional historical trend analysis across multiple report snapshots;
+- richer historical trend analysis, including category-level trends and visualization;
 - additional statistical analysis;
 - graphical reporting; and
 - additional CI/CD automation.
